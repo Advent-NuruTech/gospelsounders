@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { uploadToCloudinary } from "@/lib/cloudinary";
-import RichTextEditor from "./RichTextEditor";
+import RichTextEditor from "../RichTextEditor";
 
 interface MemberData {
   id: string;

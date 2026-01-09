@@ -8,6 +8,7 @@ import Image from "@tiptap/extension-image";
 interface RichTextEditorProps {
   value: string;
   onChange: (val: string) => void;
+  placeholder?: string;
 }
 
 export default function RichTextEditor({
@@ -26,6 +27,7 @@ export default function RichTextEditor({
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+      
     },
   });
 

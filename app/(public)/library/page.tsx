@@ -1,45 +1,36 @@
-// app/library/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 
-type Document = {
+interface LibraryDoc {
+  id: string;
   title: string;
   category: string;
+  description: string;
   filePath: string;
-};
+  createdAt: any;
+}
 
 export default function LibraryPage() {
-  // Categories (can expand)
-  const categories = ["Prophecy", "Health", "Sanctuary", "Current Events"];
-
-  // Documents — In production, fetch from API / database
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      title: "Prophecy Study Q1",
-      category: "Prophecy",
-      filePath: "/files/library/prophecy/prophecy-q1.pdf",
-    },
-    {
-      title: "Health Tips 2025",
-      category: "Health",
-      filePath: "/files/library/health/health-tips-2025.pdf",
-    },
-    {
-      title: "Sanctuary Message 2025",
-      category: "Sanctuary",
-      filePath: "https://pdfhost.io/v/YfAGahcbCP_TOPIC-_THE_FIRST_AND_SECOND_ADVENT_EXPERIENCE",
-    },
-    {
-      title: "Current Events Insights",
-      category: "Current Events",
-      filePath: "/files/library/current-events/current-events.pdf",
-    },
-  ]);
-
+  const [documents, setDocuments] = useState<LibraryDoc[]>([]);
   const [search, setSearch] = useState("");
-  const [filteredDocs, setFilteredDocs] = useState<Document[]>(documents);
+  const [filteredDocs, setFilteredDocs] = useState<LibraryDoc[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, "library"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as LibraryDoc[];
+      setDocuments(docs);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     setFilteredDocs(
@@ -51,14 +42,21 @@ export default function LibraryPage() {
     );
   }, [search, documents]);
 
+  const truncateText = (text: string, wordLimit = 60) => {
+    const words = text.split(" ");
+    return words.length > wordLimit
+      ? words.slice(0, wordLimit).join(" ") + "..."
+      : text;
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 px-6 py-12">
-      <h1 className="text-4xl font-bold text-center mb-8">Library</h1>
-      <p className="text-center max-w-2xl mx-auto text-gray-700 mb-12">
-        Explore our categorized study materials. You can read online, download, or share these resources with others.
+      <h1 className="text-4xl font-bold text-center mb-4">Library</h1>
+      <p className="text-center max-w-2xl mx-auto text-gray-700 mb-8">
+        Explore our categorized study materials. Search, read online, or download.
       </p>
 
-      {/* Search Bar */}
+      {/* Search */}
       <div className="max-w-2xl mx-auto mb-8">
         <input
           type="text"
@@ -69,22 +67,31 @@ export default function LibraryPage() {
         />
       </div>
 
-      {/* Categories */}
+      {/* Documents */}
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredDocs.map((doc, index) => (
+        {filteredDocs.map((doc) => (
           <div
-            key={index}
+            key={doc.id}
             className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition flex flex-col justify-between"
           >
             <div>
               <h3 className="text-xl font-semibold mb-1">{doc.title}</h3>
-              <p className="text-gray-500 mb-3">{doc.category}</p>
+              <p className="text-gray-500 mb-2">{doc.category}</p>
+              <p className="text-gray-700 text-sm mb-4">
+                {truncateText(doc.description, 60)}
+              </p>
+              <Link
+                href={`/library/${doc.id}`}
+                className="text-blue-900 font-medium hover:underline"
+              >
+                Read More
+              </Link>
             </div>
+
             <div className="flex justify-between mt-4">
               <a
                 href={doc.filePath}
                 target="_blank"
-                rel="https://pdfhost.io/v/YfAGahcbCP_TOPIC-_THE_FIRST_AND_SECOND_ADVENT_EXPERIENCE"
                 className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
               >
                 Read
@@ -111,5 +118,3 @@ export default function LibraryPage() {
     </main>
   );
 }
-
-

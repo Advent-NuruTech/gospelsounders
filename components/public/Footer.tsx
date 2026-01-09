@@ -19,8 +19,8 @@ export default function Footer() {
 
   const quickLinks = [
     { name: "About Us", href: "/about" },
-    { name: "Contact", href: "/contact" },
-    { name: "FAQ", href: "/faq" },
+    { name: "Fundamental Principles", href: "/doctrine/fundermental-principle" },
+    { name: "Baptisimal vows", href: "/doctrine/baptisimal-vows" },
     { name: "Blog", href: "/blog" },
   ];
 

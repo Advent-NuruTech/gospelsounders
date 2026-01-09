@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
-// Configure Cloudinary from environment variables
+// Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -17,16 +17,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Convert Blob to Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload as raw (for PDFs) or auto-detect (for images)
     const upload = () =>
       new Promise<any>((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { resource_type: "auto" }, // 'auto' handles images & PDFs
-          (error, result) => {
-            if (error) return reject(error);
+          { resource_type: "auto" }, // handles images + PDFs
+          (err, result) => {
+            if (err) return reject(err);
             resolve(result);
           }
         );

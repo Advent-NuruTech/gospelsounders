@@ -1,6 +1,6 @@
 "use client";
 
-import AddMember from "@/components/AddMember";
+import AddMember from "@/components/admin/AddMember";
 
 export default function AddMemberPage() {
   return (
