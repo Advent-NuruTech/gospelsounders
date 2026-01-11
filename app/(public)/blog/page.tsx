@@ -22,7 +22,7 @@ export type Blog = {
   createdAt?: any;
 };
 
-// Professional date formatting: Published 1st January 2026
+// Format date professionally: Published 1st January 2026
 function formatProfessionalDate(date: any) {
   if (!date) return "";
   const d =
@@ -48,9 +48,17 @@ function formatProfessionalDate(date: any) {
   })}`;
 }
 
-// 60-word preview
+// Strip HTML and extra whitespace
+function stripHtml(html?: string) {
+  if (!html) return "";
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+// Get 60-word preview safely
 function getPreview(content: string, limit = 60) {
-  return content.split(" ").slice(0, limit).join(" ") + "…";
+  const clean = stripHtml(content);
+  const words = clean.split(" ");
+  return words.length > limit ? words.slice(0, limit).join(" ") + "…" : clean;
 }
 
 export default function BlogPage() {
@@ -118,7 +126,7 @@ export default function BlogPage() {
               {getPreview(blog.content)}
             </p>
 
-            {/* Read More button links directly to blog/[id] */}
+            {/* Read More button */}
             <Link
               href={`/blog/${blog.id}`}
               className="mt-auto inline-block w-full text-center bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black py-2 px-4 rounded-full font-semibold hover:opacity-90 transition"

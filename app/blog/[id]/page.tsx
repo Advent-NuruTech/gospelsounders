@@ -132,8 +132,9 @@ export default function BlogIdPage() {
           Share This Blog
         </button>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 md:mt-0">
-          Share the blog title and a 60-word preview directly!
+      
         </p>
+
           <button
         onClick={() => router.back()}
         className="mb-6 text-[#6B4A2E] dark:text-[#D9A441] font-semibold hover:underline"
