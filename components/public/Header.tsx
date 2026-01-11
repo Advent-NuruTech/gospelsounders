@@ -40,9 +40,11 @@ export default function Navbar() {
   const publicNavItems = [
     { href: "/", label: "Home", icon: FaHome },
     { href: "/sabbath-school", label: "Sabbath School", icon: FaUsers },
+ { href: "/library", label: "Library", icon: FaBookOpen},
 
     { href: "/about", label: "About Us", icon: FaUsers },
     { href: "/blog", label: "Blog", icon: FaWater },
+    
     { href: "/contribution", label: "Donate", icon: FaDonate },
         { href: "/prayer", label: "Prayer Request", icon: FaPrayingHands }
   ];

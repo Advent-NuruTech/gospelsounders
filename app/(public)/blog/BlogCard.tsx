@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type Blog = {
+export type Blog = {
   id: string;
   title: string;
   content: string;
@@ -42,25 +42,24 @@ function formatDate(date: any) {
   });
 }
 
-export default function BlogCard({ blog }: { blog: Blog }) {
-  const [expanded, setExpanded] = useState(false);
+interface BlogCardProps {
+  blog: Blog;
+  onReadMore: (id: string) => void;
+}
 
+export default function BlogCard({ blog, onReadMore }: BlogCardProps) {
   const wordCount = getWordCount(blog.content);
   const needsReadMore = wordCount > 60;
 
   return (
     <article className="mb-10 border-b pb-6">
-      {/* TITLE */}
       <h2 className="text-xl font-bold mb-1 text-gray-900 dark:text-gray-100">
         {blog.title}
       </h2>
-
-      {/* AUTHOR */}
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
         By <span className="font-medium">{blog.author}</span>
       </p>
 
-      {/* IMAGE LOGIC — UNTOUCHED */}
       {blog.imageURL && (
         <img
           src={blog.imageURL}
@@ -70,25 +69,19 @@ export default function BlogCard({ blog }: { blog: Blog }) {
         />
       )}
 
-      {/* CONTENT */}
       <div className="prose max-w-none dark:prose-invert">
-        {expanded || !needsReadMore ? (
-          <div dangerouslySetInnerHTML={{ __html: blog.content }} />
-        ) : (
-          <p>{getPreview(blog.content)}</p>
-        )}
+        <p>{getPreview(blog.content)}</p>
       </div>
 
       {needsReadMore && (
         <button
-          onClick={() => setExpanded((v) => !v)}
+          onClick={() => onReadMore(blog.id)}
           className="mt-3 text-blue-600 dark:text-blue-400 font-medium hover:underline"
         >
-          {expanded ? "Show less" : "Read more"}
+          Read more
         </button>
       )}
 
-      {/* DATE — AT THE BOTTOM */}
       {blog.createdAt && (
         <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
           Published on {formatDate(blog.createdAt)}

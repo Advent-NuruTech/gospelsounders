@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import AuthForm from "@/components/auth/AuthForm";
+
 
 export default function AuthPage() {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function AuthPage() {
         <h2 className="text-2xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-100">
           Login / Sign Up
         </h2>
-        <AuthForm />
+      
       </div>
     </div>
   );
