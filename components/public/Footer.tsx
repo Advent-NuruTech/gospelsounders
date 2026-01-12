@@ -45,10 +45,10 @@ export default function Footer() {
   ];
 
   const services = [
-    { name: "Current Events Updates", href: "/services#consulting", icon: FaNewspaper },
-    { name: "Medical Missionary Training", href: "/services#training", icon: FaHandsHelping },
-    { name: "Publications", href: "/services#publications", icon: FaBook },
-    { name: "Bible Studies", href: "/services#bible-studies", icon: FaBible },
+
+  
+    { name: "Publications", href: "/library", icon: FaBook },
+    { name: "Bible Studies", href: "/library", icon: FaBible },
   ];
 
   const otherSites = [
@@ -182,85 +182,96 @@ export default function Footer() {
 
       <div className="relative z-10 container mx-auto px-4 py-12 max-w-7xl space-y-10">
         {/* Useful Sites Cards with Hover Preview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {otherSites.map((site, i) => (
-            <div key={i} className="relative">
+      {/* Useful Sites Cards with Hover Preview */}
+<div className="mb-8">
+  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+    Useful Sites
+  </h3>
+  <p className="text-gray-600 dark:text-gray-400">
+    Explore these selected websites for further study and resources.
+  </p>
+</div>
+
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  {otherSites.map((site, i) => (
+    <div key={i} className="relative">
+      <a
+        href={site.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-amber-50 dark:from-gray-900 dark:to-gray-800 p-4 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border border-amber-200 dark:border-amber-900/50 block"
+        onMouseEnter={() => handleSiteHover(i)}
+        onMouseLeave={handleSiteLeave}
+      >
+        <div className={`absolute inset-0 bg-gradient-to-br ${site.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+        
+        <div className="relative flex items-center gap-3">
+          <div className={`p-3 rounded-xl bg-gradient-to-br ${site.color} text-white`}>
+            <site.icon className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-bold text-gray-900 dark:text-white group-hover:text-[#C9A24D] dark:group-hover:text-[#D4B875] transition-colors truncate">
+                {site.name}
+              </span>
+              <FaExternalLinkAlt className="w-3 h-3 text-gray-400 group-hover:text-[#C9A24D] dark:group-hover:text-[#D4B875] transition-all group-hover:scale-110 flex-shrink-0" />
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+              {site.description}
+            </p>
+          </div>
+        </div>
+      </a>
+
+      {/* Hover Preview Card */}
+      {hoveredSite === i && (
+        <div 
+          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50 w-64"
+          onMouseEnter={() => handleSiteHover(i)}
+          onMouseLeave={handleSiteLeave}
+        >
+          <div className={`rounded-lg shadow-2xl border ${site.previewColor} border-gray-200 dark:border-gray-700 p-4 animate-fadeIn`}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`p-2 rounded-lg bg-gradient-to-br ${site.color}`}>
+                <site.icon className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900 dark:text-white">{site.name}</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{site.description}</p>
+              </div>
+            </div>
+            <div className="text-xs text-gray-700 dark:text-gray-300 mb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <FaInfoCircle className="w-3 h-3 text-[#C9A24D]" />
+                <span>Click to visit website</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FaLink className="w-3 h-3 text-[#C9A24D]" />
+                <span className="truncate text-gray-600 dark:text-gray-400">{site.href.replace('https://', '')}</span>
+              </div>
+            </div>
+            <div className="text-center">
               <a
                 href={site.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-amber-50 dark:from-gray-900 dark:to-gray-800 p-4 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border border-amber-200 dark:border-amber-900/50 block"
-                onMouseEnter={() => handleSiteHover(i)}
-                onMouseLeave={handleSiteLeave}
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-[#C9A24D] to-amber-600 text-white hover:opacity-90 transition-opacity"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${site.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                
-                <div className="relative flex items-center gap-3">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${site.color} text-white`}>
-                    <site.icon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-gray-900 dark:text-white group-hover:text-[#C9A24D] dark:group-hover:text-[#D4B875] transition-colors truncate">
-                        {site.name}
-                      </span>
-                      <FaExternalLinkAlt className="w-3 h-3 text-gray-400 group-hover:text-[#C9A24D] dark:group-hover:text-[#D4B875] transition-all group-hover:scale-110 flex-shrink-0" />
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {site.description}
-                    </p>
-                  </div>
-                </div>
+                Visit Site
+                <FaExternalLinkAlt className="w-3 h-3" />
               </a>
-
-              {/* Hover Preview Card */}
-              {hoveredSite === i && (
-                <div 
-                  className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50 w-64"
-                  onMouseEnter={() => handleSiteHover(i)}
-                  onMouseLeave={handleSiteLeave}
-                >
-                  <div className={`rounded-lg shadow-2xl border ${site.previewColor} border-gray-200 dark:border-gray-700 p-4 animate-fadeIn`}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2 rounded-lg bg-gradient-to-br ${site.color}`}>
-                        <site.icon className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 dark:text-white">{site.name}</h4>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{site.description}</p>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-700 dark:text-gray-300 mb-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <FaInfoCircle className="w-3 h-3 text-[#C9A24D]" />
-                        <span>Click to visit website</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaLink className="w-3 h-3 text-[#C9A24D]" />
-                        <span className="truncate text-gray-600 dark:text-gray-400">{site.href.replace('https://', '')}</span>
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <a
-                        href={site.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-[#C9A24D] to-amber-600 text-white hover:opacity-90 transition-opacity"
-                      >
-                        Visit Site
-                        <FaExternalLinkAlt className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-                  {/* Arrow */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2">
-                    <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-200 dark:border-t-gray-700"></div>
-                  </div>
-                </div>
-              )}
             </div>
-          ))}
+          </div>
+          {/* Arrow */}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+            <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-200 dark:border-t-gray-700"></div>
+          </div>
         </div>
+      )}
+    </div>
+  ))}
+</div>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Brand Section */}
