@@ -1,102 +1,169 @@
-// app/page.tsx
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
+
+/* ================= IMPORT COMPONENTS ================= */
+import Hero from "@/components/public/HeroBanner";
+
+import BlogList from "@/components/public/BlogList";
+import LibraryList from "@/components/public/LibraryList";
+import { SectionTitle } from "@/components/public/SectionTitle";
+import YoutubeCarousel from "@/components/public/YoutubeCarousel";
+
+// First, let's define the proper SectionTitleProps interface
+// Based on your usage, it should include align and variant
+// If SectionTitle component doesn't accept these, we need to update it
+// For now, let's use the props that the component actually accepts
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#F6F1EA] text-[#2A1A10]">
-      
-      {/* Hero Section */}
-      <section className="relative bg-[#3B2414] text-center py-24 px-6">
-        <h1 className="text-4xl md:text-6xl font-bold mb-4 text-[#F6F1EA]">
-          Gospel Sounders 
-        </h1>
-         <h4 className="text-1xl md:text-2xl font-bold mb-4 text-[#F6F1EA]">
-     Publications & Missions
-        </h4>
-        <p className="text-lg md:text-2xl mb-8 text-[#E7D9C4]">
-              Revealing the Father and the Son
-        </p>
-        <Link
-          href="/sabbath-school"
-          className="inline-block bg-[#C9A24D] text-[#3B2414] font-semibold px-8 py-3 rounded-lg hover:bg-[#B8943F] transition"
-        >
-          View Sabbath School Lessons
-        </Link>
-      </section>
+    <main className="min-h-screen bg-white dark:bg-[#1F1A16] text-gray-900 dark:text-[#F6F1EA] transition-colors duration-300">
 
-      {/* Features Section */}
-      <section className="py-20 px-6 max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12 text-[#3B2414]">
-          Explore Our Ministry
-        </h2>
+      {/* ================= HERO ================= */}
+      <Hero />
 
-        <div className="grid md:grid-cols-3 gap-8">
-          
-          <div className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-xl transition">
-            <h3 className="font-semibold text-xl mb-2 text-[#3B2414]">
-              Sabbath School Lessons
-            </h3>
-            <p className="text-gray-700 mb-4">
-              Read, download, and share lessons from past, present, and future quarters.
-            </p>
-            <Link
-              href="/sabbath-school"
-              className="font-semibold text-[#5A3A23] hover:text-[#C9A24D]"
+
+
+
+ {/* ================= YOUTUBE ================= */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-[#2A221C] transition-colors duration-300">
+        <div className="max-w-7xl mx-auto">
+          <SectionTitle
+            title="Latest Video Messages"
+            subtitle="Watch sermons, teachings, and ministry highlights"
+          />
+
+          {/* YouTube Carousel */}
+          <motion.div 
+            className="mt-8 sm:mt-12"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <YoutubeCarousel />
+          </motion.div>
+
+          <motion.div 
+            className="text-center mt-10 sm:mt-12"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5 }}
+          >
+            <a
+              href="https://youtube.com/@gospelsounders"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                inline-block 
+                bg-gradient-to-r from-[#C9A24D] to-[#B8943F]
+                text-white dark:text-[#3B2414]
+                px-6 sm:px-8 py-3 sm:py-4
+                rounded-lg font-semibold
+                hover:shadow-xl hover:scale-105
+                active:scale-95
+                transition-all duration-300
+                text-base sm:text-lg
+              "
             >
-              Learn More
-            </Link>
-          </div>
-
-          <div className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-xl transition">
-            <h3 className="font-semibold text-xl mb-2 text-[#3B2414]">
-              Library
-            </h3>
-            <p className="text-gray-700 mb-4">
-              Access categorized studies on prophecy, health, current events, and more.
-            </p>
-            <Link
-              href="/library"
-              className="font-semibold text-[#5A3A23] hover:text-[#C9A24D]"
-            >
-              Explore Library
-            </Link>
-          </div>
-
-          <div className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-xl transition">
-            <h3 className="font-semibold text-xl mb-2 text-[#3B2414]">
-              Blog & Updates
-            </h3>
-            <p className="text-gray-700 mb-4">
-              Stay updated with news, articles, and ministry stories.
-            </p>
-            <Link
-              href="/blog"
-              className="font-semibold text-[#5A3A23] hover:text-[#C9A24D]"
-            >
-              Read Blog
-            </Link>
-          </div>
-
+              View All Videos →
+            </a>
+          </motion.div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-20 px-6 bg-[#EFE6DA] text-center">
-        <h2 className="text-3xl font-bold mb-6 text-[#3B2414]">
-          Who We Are
-        </h2>
-        <p className="max-w-2xl mx-auto text-gray-700 mb-8">
-          Gospel Sounders Ministry is committed to sharing the Word of God, inspiring faith,
-          and nurturing spiritual growth through publications and missions.
-        </p>
-        <Link
-          href="/members"
-          className="inline-block bg-[#5A3A23] text-[#F6F1EA] font-semibold px-8 py-3 rounded-lg hover:bg-[#3B2414] transition"
-        >
-          Meet Our Team
-        </Link>
+
+
+
+      {/* ================= BLOG ================= */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-[#2A221C] transition-colors duration-300">
+        <div className="max-w-7xl mx-auto">
+          <SectionTitle
+            title="Ministry Blog & Updates"
+            subtitle="Inspired articles, announcements, and spiritual reflections"
+          />
+
+          {/* Desktop: 2 columns, 1 row with proper card sizing */}
+          <div className="mt-8 sm:mt-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+              <BlogList maxBlogs={2} />
+            </div>
+          </div>
+
+          <motion.div 
+            className="text-center mt-10 sm:mt-12"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5 }}
+          >
+            <Link
+              href="/blog"
+              className="
+                inline-block 
+                border-2 border-[#C9A24D]
+                text-gray-900 dark:text-[#F6F1EA]
+                px-6 sm:px-8 py-3 sm:py-4
+                rounded-lg font-semibold
+                hover:bg-[#C9A24D]
+                hover:text-white dark:hover:text-[#3B2414]
+                hover:shadow-xl hover:scale-105
+                active:scale-95
+                transition-all duration-300
+                text-base sm:text-lg
+              "
+            >
+              View All Blog Posts →
+            </Link>
+          </motion.div>
+        </div>
       </section>
 
+      {/* ================= LIBRARY ================= */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <SectionTitle
+          title="Bible Study Library"
+          subtitle="Carefully prepared study notes, references, and downloads"
+        />
+
+        {/* Enhanced card grid with consistent sizing */}
+        <div className="mt-8 sm:mt-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+            <LibraryList maxDocs={2} />
+          </div>
+        </div>
+
+        <motion.div 
+          className="text-center mt-10 sm:mt-12"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link
+            href="/library"
+            className="
+              inline-block 
+              bg-gradient-to-r from-[#3B2414] to-[#2A170D]
+              text-white
+              px-6 sm:px-8 py-3 sm:py-4
+              rounded-lg font-semibold
+              hover:shadow-xl hover:scale-105
+              active:scale-95
+              transition-all duration-300
+              text-base sm:text-lg
+            "
+          >
+            View Full Library →
+          </Link>
+        </motion.div>
+      </section>
+
+     
+
+      
     </main>
   );
 }

@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/sabbath-school/add-lesson", label: "Add Lesson", icon: FaBookOpen },
   { href: "/admin/blog/post", label: "Post Blog", icon: FaBookOpen },
    { href: "/admin/bible-studies", label: "Upload study notes ", icon: FaBookOpen },
+      { href: "/admin/upload-video", label: "Upload Video", icon: FaBookOpen },
   { href: "/admin/sabbath-school/edit-lesson", label: "Edit Lessons", icon: FaBookOpen },
   { href: "/admin/received-prayer", label: "Prayer Requests", icon: FaPrayingHands },
 

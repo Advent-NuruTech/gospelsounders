@@ -7,6 +7,9 @@ import {
   FaInstagram,
   FaYoutube,
   FaWhatsapp,
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaPhoneAlt,
   FaArrowUp,
 } from "react-icons/fa";
 
@@ -101,18 +104,30 @@ export default function Footer() {
                 Get In Touch
               </h4>
 
-              <div className="space-y-3 mb-6 text-sm text-gray-700 dark:text-gray-300">
-                <p>Kenya – Africa</p>
-                <p><a
-                  href="mailto:Gspublicationsmissions@gmail.com"
-                  className="hover:underline"
-                >
-                  Gspublicationsmissions@gmail.com
-                </a></p>
-                <p><a href="tel:+254722878683" className="hover:underline">
-                  +254 722 878683
-                </a></p>
-              </div>
+             <div className="space-y-3 mb-6 text-sm text-gray-700 dark:text-gray-300">
+  <div className="flex items-center gap-2">
+    <FaMapMarkerAlt className="text-blue-500" />
+    <span>Kenya – Africa</span>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <FaEnvelope className="text-purple-500" />
+    <a
+      href="mailto:Gspublicationsmissions@gmail.com"
+      className="hover:underline"
+    >
+      Gspublicationsmissions@gmail.com
+    </a>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <FaPhoneAlt className="text-green-500" />
+    <a href="tel:+254722878683" className="hover:underline">
+      +254 722 878683
+    </a>
+  </div>
+</div>
+
 
               {/* Social Icons — UNTOUCHED */}
               <div>
@@ -145,18 +160,36 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-gray-200 dark:border-white/10 pt-8 flex flex-col lg:flex-row justify-between items-center gap-4">
-          <div className="text-center lg:text-left text-sm text-gray-600 dark:text-gray-400">
-            © {year} Gospel Sounders Publications & Missions. All rights reserved.
-          </div>
+       
 
-          <button
-            onClick={scrollToTop}
-            className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white hover:scale-110 transition"
-          >
-            <FaArrowUp className="w-4 h-4" />
-          </button>
-        </div>
+        <div className="text-center lg:text-left text-sm text-gray-600 dark:text-gray-400 space-y-2">
+  <p>
+    © {year} Gospel Sounders Publications & Missions. All rights reserved.
+  </p>
+
+  <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-sm">
+    <a
+      href="/privacy"
+      className="hover:underline hover:text-gray-900 dark:hover:text-white transition"
+    >
+      Privacy Policy
+    </a>
+    <a
+      href="/terms"
+      className="hover:underline hover:text-gray-900 dark:hover:text-white transition"
+    >
+      Terms of Use
+    </a>
+    <a
+      href="/cookies"
+      className="hover:underline hover:text-gray-900 dark:hover:text-white transition"
+    >
+      Cookies
+    </a>
+  </div>
+  
+</div>
+
       </div>
     </footer>
   );

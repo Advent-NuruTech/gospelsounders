@@ -45,7 +45,7 @@ export default function Navbar() {
     { href: "/about", label: "About Us", icon: FaUsers },
     { href: "/blog", label: "Blog", icon: FaWater },
     
-    { href: "/contribution", label: "Donate", icon: FaDonate },
+    { href: "#", label: "Donate", icon: FaDonate },
         { href: "/prayer", label: "Prayer Request", icon: FaPrayingHands }
   ];
 
@@ -76,7 +76,7 @@ export default function Navbar() {
                   Gospel Sounders
                 </h1>
                 <p className="text-xs sm:text-sm md:text-base text-[#D8C9B4] dark:text-[#6B4A2E] -mt-1">
-                  Publications & Ministry
+                  Publications & Missions
                 </p>
               </div>
             </Link>

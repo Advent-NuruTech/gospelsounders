@@ -12,7 +12,7 @@ export default function DonatePage() {
         </p>
 
         <a
-          href="https://www.paypal.me/GospelSounders"
+          href="https://www.paypal.me/pondezedd@gmail.com"
           target="_blank"
           className="inline-block bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold px-8 py-4 rounded-lg transition"
         >
