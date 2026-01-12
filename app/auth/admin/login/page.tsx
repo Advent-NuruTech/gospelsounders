@@ -12,7 +12,7 @@ export default function AdminLoginPage() {
   useEffect(() => {
     const unsubscribe = useAdminState(user => {
       if (user) {
-        router.replace("/admin/dashboard"); // Redirect to admin dashboard
+        router.replace("/admin"); // Redirect to admin dashboard
       }
     });
     return () => unsubscribe();
