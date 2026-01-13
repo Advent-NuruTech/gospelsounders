@@ -35,7 +35,7 @@ export default function AddAdmin() {
       await createUserWithEmailAndPassword(auth, email, password);
       const firstName = email.split("@")[0] || "Admin";
 
-      const loginUrl = `${window.location.origin}/admin/login`;
+      const loginUrl = `${window.location.origin}/auth/admin/login`;
 
       // HTML formatted email message
       const htmlMessage = `

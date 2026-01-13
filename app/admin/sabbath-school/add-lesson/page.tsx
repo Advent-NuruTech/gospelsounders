@@ -48,74 +48,118 @@ export default function AddLessonPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-xl font-bold mb-4">Add Lesson</h1>
+    <div className="max-w-3xl mx-auto p-4 md:p-6">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+        Add Sabbath School Lesson
+      </h1>
 
-      <input
-        placeholder="Lesson Title"
-        className="border p-2 w-full mb-2"
-        value={form.title}
-        onChange={e => setForm({ ...form, title: e.target.value })}
-      />
+      {/* FORM CARD */}
+      <div className="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg shadow p-5 space-y-4">
+        <input
+          placeholder="Lesson Title"
+          value={form.title}
+          onChange={(e) =>
+            setForm({ ...form, title: e.target.value })
+          }
+          className="w-full p-2 rounded border bg-white dark:bg-gray-800
+            text-gray-800 dark:text-gray-200
+            border-gray-300 dark:border-gray-600"
+        />
 
-      <div className="grid grid-cols-2 gap-2 mb-2">
-        <input
-          type="date"
-          className="border p-2"
-          value={form.startDate}
-          onChange={e => setForm({ ...form, startDate: e.target.value })}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input
+            type="date"
+            value={form.startDate}
+            onChange={(e) =>
+              setForm({ ...form, startDate: e.target.value })
+            }
+            className="p-2 rounded border bg-white dark:bg-gray-800
+              text-gray-800 dark:text-gray-200
+              border-gray-300 dark:border-gray-600"
+          />
+
+          <input
+            type="date"
+            value={form.endDate}
+            onChange={(e) =>
+              setForm({ ...form, endDate: e.target.value })
+            }
+            className="p-2 rounded border bg-white dark:bg-gray-800
+              text-gray-800 dark:text-gray-200
+              border-gray-300 dark:border-gray-600"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input
+            type="number"
+            value={form.year}
+            onChange={(e) =>
+              setForm({ ...form, year: Number(e.target.value) })
+            }
+            className="p-2 rounded border bg-white dark:bg-gray-800
+              text-gray-800 dark:text-gray-200
+              border-gray-300 dark:border-gray-600"
+          />
+
+          <input
+            type="number"
+            min={1}
+            max={4}
+            value={form.quarter}
+            onChange={(e) =>
+              setForm({ ...form, quarter: Number(e.target.value) })
+            }
+            className="p-2 rounded border bg-white dark:bg-gray-800
+              text-gray-800 dark:text-gray-200
+              border-gray-300 dark:border-gray-600"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Lesson PDF
+          </label>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) =>
+              setFile(e.target.files?.[0] ?? null)
+            }
+            className="text-sm text-gray-600 dark:text-gray-300"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Thumbnail (optional)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              setThumbnail(e.target.files?.[0] ?? null)
+            }
+            className="text-sm text-gray-600 dark:text-gray-300"
+          />
+        </div>
+
+        <RichTextEditor
+          value={form.description}
+          onChange={(desc) =>
+            setForm({ ...form, description: desc })
+          }
         />
-        <input
-          type="date"
-          className="border p-2"
-          value={form.endDate}
-          onChange={e => setForm({ ...form, endDate: e.target.value })}
-        />
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700
+            text-white py-2 rounded transition"
+        >
+          {loading ? "Saving Lesson..." : "Add Lesson"}
+        </button>
       </div>
-
-      <div className="grid grid-cols-2 gap-2 mb-2">
-        <input
-          type="number"
-          className="border p-2"
-          value={form.year}
-          onChange={e => setForm({ ...form, year: Number(e.target.value) })}
-        />
-        <input
-          type="number"
-          min={1}
-          max={4}
-          className="border p-2"
-          value={form.quarter}
-          onChange={e => setForm({ ...form, quarter: Number(e.target.value) })}
-        />
-      </div>
-
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={e => setFile(e.target.files?.[0] ?? null)}
-        className="mb-2"
-      />
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={e => setThumbnail(e.target.files?.[0] ?? null)}
-        className="mb-2"
-      />
-
-      <RichTextEditor
-        value={form.description}
-        onChange={desc => setForm({ ...form, description: desc })}
-      />
-
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="bg-black text-white px-4 py-2 rounded mt-4"
-      >
-        {loading ? "Saving..." : "Add Lesson"}
-      </button>
     </div>
   );
 }

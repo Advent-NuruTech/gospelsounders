@@ -30,7 +30,7 @@ export default function AdminSidebar({
 
   const handleLogout = async () => {
     await logout();
-    router.replace("/admin/login");
+    router.replace("/");
   };
 
   return (
