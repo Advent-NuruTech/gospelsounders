@@ -30,21 +30,15 @@ export default function BlogManager() {
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  // Load blogs from Firestore
   useEffect(() => {
     const loadBlogs = async () => {
-      try {
-        const snap = await getDocs(collection(db, "blog"));
-        const data: Blog[] = snap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Blog, "id">),
-        }));
-        setBlogs(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+      const snap = await getDocs(collection(db, "blog"));
+      const data: Blog[] = snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<Blog, "id">),
+      }));
+      setBlogs(data);
+      setLoading(false);
     };
     loadBlogs();
   }, []);
@@ -62,45 +56,38 @@ export default function BlogManager() {
     const blog = blogs.find((b) => b.id === editingId);
     if (!blog) return;
 
-    try {
-      let imageURL = blog.imageURL || "";
+    let imageURL = blog.imageURL || "";
 
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
-        const res = await fetch("/api/upload-blog-image", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        imageURL = data.url;
-      }
-
-      await updateDoc(doc(db, "blog", editingId), {
-        title,
-        author,
-        content,
-        imageURL,
-        updatedAt: serverTimestamp(),
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+      const res = await fetch("/api/upload-blog-image", {
+        method: "POST",
+        body: formData,
       });
-
-      setBlogs((prev) =>
-        prev.map((b) =>
-          b.id === editingId ? { ...b, title, author, content, imageURL } : b
-        )
-      );
-
-      setEditingId(null);
-      setTitle("");
-      setAuthor("");
-      setContent("");
-      setImageFile(null);
-
-      alert("Blog updated successfully");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update blog");
+      const data = await res.json();
+      imageURL = data.url;
     }
+
+    await updateDoc(doc(db, "blog", editingId), {
+      title,
+      author,
+      content,
+      imageURL,
+      updatedAt: serverTimestamp(),
+    });
+
+    setBlogs((prev) =>
+      prev.map((b) =>
+        b.id === editingId ? { ...b, title, author, content, imageURL } : b
+      )
+    );
+
+    setEditingId(null);
+    setTitle("");
+    setAuthor("");
+    setContent("");
+    setImageFile(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -109,123 +96,122 @@ export default function BlogManager() {
     setBlogs((prev) => prev.filter((b) => b.id !== id));
   };
 
-  if (loading) return <div className="p-6">Loading blogs...</div>;
-  if (blogs.length === 0)
-    return (
-      <div className="p-6 text-gray-600 dark:text-gray-300">No blogs found</div>
-    );
+  if (loading)
+    return <div className="p-6 text-white">Loading blogs...</div>;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        Manage Blogs
-      </h1>
+    <div className="min-h-screen bg-[#0D3B66] text-white p-6">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">
+          Manage Blogs
+        </h1>
 
-      <ul className="space-y-6">
-        {blogs.map((b) => (
-          <li
-            key={b.id}
-            className="border rounded-lg p-4 bg-white dark:bg-gray-900 shadow-sm"
-          >
-            {editingId === b.id ? (
-              <>
-                <input
-                  type="text"
-                  className="border p-2 w-full mb-2 rounded dark:bg-gray-700 dark:text-white"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Title"
-                />
-                <input
-                  type="text"
-                  className="border p-2 w-full mb-2 rounded dark:bg-gray-700 dark:text-white"
-                  value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
-                  placeholder="Author"
-                />
-
-                {/* RichTextEditor inline editing */}
-                <div className="mb-2">
-                  <RichTextEditor value={content} onChange={setContent} />
-                </div>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                  className="mb-2"
-                />
-
-                {!imageFile && b.imageURL && (
-                  <img
-                    src={b.imageURL}
-                    alt={b.title}
-                    className="w-full mt-2 object-contain rounded"
+        <ul className="space-y-6">
+          {blogs.map((b) => (
+            <li
+              key={b.id}
+              className="p-4 rounded-lg bg-[#0A2F52] border border-blue-500"
+            >
+              {editingId === b.id ? (
+                <>
+                  <input
+                    type="text"
+                    className="w-full p-2 mb-2 rounded bg-[#08304F] border border-blue-400 text-white"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Title"
                   />
-                )}
 
-                {imageFile && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {imageFile.name}
-                  </p>
-                )}
+                  <input
+                    type="text"
+                    className="w-full p-2 mb-2 rounded bg-[#08304F] border border-blue-400 text-white"
+                    value={author}
+                    onChange={(e) => setAuthor(e.target.value)}
+                    placeholder="Author"
+                  />
 
-                <div className="flex gap-3 mt-2">
-                  <button
-                    onClick={handleSave}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2 className="font-bold text-lg text-gray-900 dark:text-gray-100">
-                  {b.title}
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  By {b.author}
-                  {b.createdAt && (
-                    <> • {new Date(b.createdAt.seconds * 1000).toLocaleDateString()}</>
+                  <div className="mb-3">
+                    <RichTextEditor value={content} onChange={setContent} />
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setImageFile(e.target.files?.[0] ?? null)
+                    }
+                    className="mb-2 text-sm"
+                  />
+
+                  {!imageFile && b.imageURL && (
+                    <img
+                      src={b.imageURL}
+                      alt={b.title}
+                      className="w-full mt-2 rounded"
+                    />
                   )}
-                </p>
-                {b.imageURL && (
-                  <img
-                    src={b.imageURL}
-                    alt={b.title}
-                    className="w-full mt-2 object-contain rounded"
+
+                  <div className="flex gap-3 mt-3">
+                    <button
+                      onClick={handleSave}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded font-semibold"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-bold text-lg">
+                    {b.title}
+                  </h2>
+
+                  <p className="text-sm text-blue-200 mb-2">
+                    By {b.author}
+                    {b.createdAt && (
+                      <> • {new Date(b.createdAt.seconds * 1000).toLocaleDateString()}</>
+                    )}
+                  </p>
+
+                  {b.imageURL && (
+                    <img
+                      src={b.imageURL}
+                      alt={b.title}
+                      className="w-full mt-2 rounded"
+                    />
+                  )}
+
+                  <div
+                    className="prose prose-invert max-w-none mt-3"
+                    dangerouslySetInnerHTML={{ __html: b.content }}
                   />
-                )}
-                <div
-                  className="prose mt-2 dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: b.content }}
-                />
-                <div className="flex gap-3 mt-2">
-                  <button
-                    onClick={() => startEdit(b)}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(b.id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+
+                  <div className="flex gap-3 mt-3">
+                    <button
+                      onClick={() => startEdit(b)}
+                      className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 rounded text-black font-semibold"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(b.id)}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

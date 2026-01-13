@@ -19,7 +19,6 @@ interface Video {
   createdAt: Timestamp;
 }
 
-// Helper: extract YouTube video ID from any YouTube URL
 function extractYouTubeID(url: string): string | null {
   try {
     const regExp =
@@ -35,8 +34,8 @@ export default function UploadVideoPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Fetch existing video IDs in real-time
   useEffect(() => {
     const q = query(collection(db, "youtubeVideos"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -62,8 +61,7 @@ export default function UploadVideoPage() {
         createdAt: Timestamp.now(),
       });
       setVideoUrl("");
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Failed to upload video");
     } finally {
       setLoading(false);
@@ -71,19 +69,20 @@ export default function UploadVideoPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this video?")) return;
-    try {
-      await deleteDoc(doc(db, "youtubeVideos", id));
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete video");
-    }
+    if (!confirm("Delete this video?")) return;
+    await deleteDoc(doc(db, "youtubeVideos", id));
+  };
+
+  const handleCopy = async (url: string, id: string) => {
+    await navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1500);
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-start p-6 bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+    <div className="min-h-screen bg-[#0D3B66] text-white p-6">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">
           Upload YouTube Video
         </h1>
 
@@ -92,49 +91,70 @@ export default function UploadVideoPage() {
           placeholder="Paste YouTube URL or Video ID"
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
-          className="w-full p-2 rounded border mb-4 dark:bg-gray-700 dark:text-gray-100"
+          className="w-full p-2 rounded bg-[#0A2F52] border border-blue-400 placeholder-gray-300 text-white mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+
         <button
           onClick={handleUpload}
           disabled={loading}
-          className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded transition font-semibold"
         >
           {loading ? "Uploading..." : "Upload"}
         </button>
 
-        <h2 className="mt-6 text-lg font-semibold text-gray-700 dark:text-gray-200">
+        <h2 className="mt-6 text-lg font-semibold">
           Uploaded Videos
         </h2>
+
         <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
           {videos.length === 0 && (
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-300">
               No videos uploaded yet.
             </p>
           )}
-          {videos.map((vid) => (
-            <div
-              key={vid.id}
-              className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-700 rounded"
-            >
-              <span className="text-gray-800 dark:text-gray-100">{vid.videoId}</span>
-              <div className="flex space-x-3">
-                <a
-                  href={`https://youtu.be/${vid.videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  View
-                </a>
-                <button
-                  onClick={() => handleDelete(vid.id)}
-                  className="text-red-600 dark:text-red-400 hover:underline"
-                >
-                  Delete
-                </button>
+
+          {videos.map((vid) => {
+            const url = `https://youtu.be/${vid.videoId}`;
+            return (
+              <div
+                key={vid.id}
+                className="flex justify-between items-center p-3 rounded bg-[#0A2F52] border border-blue-500"
+              >
+                <span className="break-all text-sm">
+                  {vid.videoId}
+                </span>
+
+                <div className="flex gap-3 text-sm">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    View
+                  </a>
+
+                  <button
+                    onClick={() => handleCopy(url, vid.id)}
+                    className={`px-2 py-1 rounded border border-blue-400 ${
+                      copiedId === vid.id
+                        ? "bg-blue-600"
+                        : "hover:bg-blue-700"
+                    }`}
+                  >
+                    {copiedId === vid.id ? "Copied" : "Copy"}
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(vid.id)}
+                    className="text-red-400 hover:underline"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

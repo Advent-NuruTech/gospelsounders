@@ -70,7 +70,7 @@ export default function Sidebar({ isOpen, onClose, publicNavItems }: SidebarProp
               Gospel Sounders
             </h3>
             <p className="text-xs sm:text-sm text-[#D8C9B4] dark:text-[#6B4A2E]">
-              Publications & Ministry
+              Publications & Missions
             </p>
           </div>
 

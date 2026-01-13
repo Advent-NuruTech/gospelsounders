@@ -8,121 +8,72 @@ import Image from "@tiptap/extension-image";
 interface RichTextEditorProps {
   value: string;
   onChange: (val: string) => void;
-  placeholder?: string;
 }
 
-export default function RichTextEditor({
-  value,
-  onChange,
-}: RichTextEditorProps) {
+export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   const editor = useEditor({
-    immediatelyRender: false, // ✅ FIXES SSR HYDRATION ERROR
+    immediatelyRender: false,
     extensions: [
       StarterKit,
-      Link.configure({
-        openOnClick: true,
-      }),
+      Link.configure({ openOnClick: true }),
       Image,
     ],
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
-      
     },
   });
 
   if (!editor) return null;
 
   return (
-    <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-[#2A1A10]">
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 mb-2">
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          Bold
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          Italic
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          Strike
-        </button>
-
-        <button
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
-          }
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          H1
-        </button>
-
-        <button
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          H2
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          Bullet List
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          Ordered List
-        </button>
+    <div className="space-y-2">
+      {/* Toolbar — flat, no card */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { label: "Bold", action: () => editor.chain().focus().toggleBold().run() },
+          { label: "Italic", action: () => editor.chain().focus().toggleItalic().run() },
+          { label: "Strike", action: () => editor.chain().focus().toggleStrike().run() },
+          { label: "H1", action: () => editor.chain().focus().toggleHeading({ level: 1 }).run() },
+          { label: "H2", action: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
+          { label: "Bullet", action: () => editor.chain().focus().toggleBulletList().run() },
+          { label: "Ordered", action: () => editor.chain().focus().toggleOrderedList().run() },
+        ].map((btn) => (
+          <button
+            key={btn.label}
+            onClick={btn.action}
+            className="px-2 py-1 text-sm border border-blue-400 text-white hover:bg-blue-600 transition"
+          >
+            {btn.label}
+          </button>
+        ))}
 
         <button
           onClick={() => {
             const url = prompt("Enter link URL");
             if (url) {
-              editor
-                .chain()
-                .focus()
-                .extendMarkRange("link")
-                .setLink({ href: url })
-                .run();
+              editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
             }
           }}
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
+          className="px-2 py-1 text-sm border border-blue-400 text-white hover:bg-blue-600"
         >
           Link
         </button>
 
-        <button
-          onClick={() => {
-            const url = prompt("Enter image URL");
-            if (url) {
-              editor.chain().focus().setImage({ src: url }).run();
-            }
-          }}
-          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
-        >
-          Image
-        </button>
+       
       </div>
 
+      {/* Editor — no card, no white */}
       <EditorContent
         editor={editor}
-        className="min-h-[200px] p-2 bg-white dark:bg-[#2A1A10] text-black dark:text-white rounded-lg"
+        className="
+          min-h-[200px]
+          p-3
+          text-white
+          bg-transparent
+          border border-blue-400
+          focus:outline-none
+        "
       />
     </div>
   );

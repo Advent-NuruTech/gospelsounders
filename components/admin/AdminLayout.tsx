@@ -12,8 +12,8 @@ import {
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: FaTachometerAlt },
-  { href: "/members/add-member", label: "Add Member", icon: FaUsers },
-  { href: "/members/edit-member", label: "Edit Members", icon: FaUsers },
+  { href: "/admin/members/add-member", label: "Add Member", icon: FaUsers },
+  { href: "/admin/members/edit-member", label: "Edit Members", icon: FaUsers },
   { href: "/admin/sabbath-school/add-lesson", label: "Add Lesson", icon: FaBookOpen },
   { href: "/admin/blog/post", label: "Post Blog", icon: FaBookOpen }, 
    { href: "/admin/blog/blog-delete", label: "Edit or Delete Blog", icon: FaBookOpen },
