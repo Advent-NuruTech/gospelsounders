@@ -17,7 +17,7 @@ export default function AdminAuthGuard({ children }: Props) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (!firebaseUser) {
-        router.replace("/");
+        router.replace("/auth/admin/login");
       } else {
         setUser(firebaseUser);
         setLoading(false);
