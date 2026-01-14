@@ -482,7 +482,7 @@ export default function Footer() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              {["Privacy Policy", "Terms of Use", "Cookies", "Disclaimer"].map((item, i) => (
+              {["Privacy Policy", "Terms of Use", "Cookies"].map((item, i) => (
                 <a
                   key={i}
                   href={`/${item.toLowerCase().replace(' ', '-')}`}
