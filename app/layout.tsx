@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     url: "https://gspublicationsandmissions.org",
     title: "Gospel Sounders Publications & Missions",
     description:
-      "Revealing the Father and the Son through sound doctrine and missionary work.",
+      "Revealing the Father and the Son, proclaiming the everlasting gospel through the three angels’ messages, restoring biblical truth, and practically preparing a people for Christ’s soon return.",
     siteName: "Gospel Sounders Publications & Missions",
     images: [
       {
