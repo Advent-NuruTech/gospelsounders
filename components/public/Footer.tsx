@@ -477,7 +477,7 @@ export default function Footer() {
                 © {year} Gospel Sounders Publications & Missions. All rights reserved.
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Revealing truth through sound doctrine and missionary work.
+                Revealing the Father and the Son.
               </p>
             </div>
 
