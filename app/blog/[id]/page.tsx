@@ -12,6 +12,7 @@ import {
   where,
 } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
+import Head from "next/head";
 
 type Blog = {
   id: string;
@@ -19,18 +20,21 @@ type Blog = {
   content: string;
   imageURL?: string;
   author: string;
-  createdAt?: any;
+  createdAt?: Date | { toDate: () => Date } | string;
+  description?: string;
 };
 
 // -------- Helpers --------
-function formatProfessionalDate(date: any) {
+function formatProfessionalDate(date: Blog["createdAt"]) {
   if (!date) return "";
   const d =
     typeof date === "string"
       ? new Date(date)
+      : date instanceof Date
+      ? date
       : date?.toDate
       ? date.toDate()
-      : new Date(date);
+      : new Date();
 
   const day = d.getDate();
   const suffix =
@@ -53,16 +57,31 @@ function stripHtml(html: string) {
 }
 
 function getExcerpt(text: string, words = 24) {
-  return text.split(" ").slice(0, words).join(" ") + "…";
+  const wordsArray = text.split(" ");
+  if (wordsArray.length <= words) return text;
+  return wordsArray.slice(0, words).join(" ") + "…";
 }
 
-// Helper to truncate text for sharing
 function createShareText(title: string, description: string, maxWords = 60): string {
   const titleWords = title.split(" ").length;
-  const availableWords = maxWords - titleWords;
+  const availableWords = Math.max(10, maxWords - titleWords);
   
   const truncatedDesc = description.split(" ").slice(0, availableWords).join(" ");
-  return `${title}. ${truncatedDesc}${description.split(" ").length > availableWords ? '…' : ''}`;
+  const hasMore = description.split(" ").length > availableWords;
+  return `${title}. ${truncatedDesc}${hasMore ? '…' : ''}`;
+}
+
+function generateMetaDescription(blog: Blog): string {
+  if (blog.description) {
+    return blog.description.length > 160 
+      ? blog.description.substring(0, 157) + "..."
+      : blog.description;
+  }
+  
+  const plainText = stripHtml(blog.content);
+  if (plainText.length <= 160) return plainText;
+  
+  return plainText.substring(0, 157) + "...";
 }
 
 export default function BlogIdPage() {
@@ -72,6 +91,18 @@ export default function BlogIdPage() {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [suggestedBlogs, setSuggestedBlogs] = useState<Blog[]>([]);
   const [isSharing, setIsSharing] = useState(false);
+  const [metaDescription, setMetaDescription] = useState("");
+  const [shareSupported, setShareSupported] = useState(false);
+  const [contentParagraphs, setContentParagraphs] = useState<string[]>([]);
+  const [lastTwoParagraphs, setLastTwoParagraphs] = useState<string>("");
+
+  useEffect(() => {
+    setShareSupported(!!navigator.share);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     async function fetchBlogAndSuggestions() {
@@ -92,11 +123,30 @@ export default function BlogIdPage() {
         imageURL: data.imageURL,
         author: data.author ?? "Unknown author",
         createdAt: data.createdAt ?? null,
+        description: data.description || "",
       };
 
       setBlog(currentBlog);
+      
+      // Generate meta description
+      const metaDesc = generateMetaDescription(currentBlog);
+      setMetaDescription(metaDesc);
+      document.title = `${currentBlog.title} | Blog`;
 
-      // Fetch suggested blogs excluding current one
+      // Process content for better readability
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = currentBlog.content;
+      const paragraphs = Array.from(tempDiv.querySelectorAll('p')).map(p => p.innerHTML);
+      setContentParagraphs(paragraphs);
+      
+      // Extract last two paragraphs for special handling
+      if (paragraphs.length >= 2) {
+        const lastTwo = paragraphs.slice(-2);
+        const lastTwoText = lastTwo.map(p => stripHtml(p)).join(' ');
+        setLastTwoParagraphs(lastTwoText);
+      }
+
+      // Fetch suggested blogs
       const blogsRef = collection(db, "blog");
       const q = query(blogsRef, where("__name__", "!=", id), limit(6));
       const qsnap = await getDocs(q);
@@ -111,6 +161,7 @@ export default function BlogIdPage() {
           imageURL: d.imageURL,
           author: d.author ?? "Unknown author",
           createdAt: d.createdAt ?? null,
+          description: d.description || "",
         });
       });
 
@@ -120,76 +171,62 @@ export default function BlogIdPage() {
     fetchBlogAndSuggestions();
   }, [params.id, router]);
 
-  // -------- FIXED SHARE LOGIC --------
-  async function shareBlog(blog: Blog) {
+  async function shareWithImage(blog: Blog) {
+    if (!shareSupported) {
+      try {
+        const textToCopy = `${blog.title}\n\n${window.location.href}`;
+        await navigator.clipboard.writeText(textToCopy);
+        alert("Link copied to clipboard!");
+      } catch {
+        alert("Sharing is not supported on this device");
+      }
+      return;
+    }
+
     setIsSharing(true);
     
     try {
       const plainText = stripHtml(blog.content);
       const shareText = createShareText(blog.title, plainText, 60);
       
-      // Check if Web Share API is available
-      if (!navigator.share) {
-        throw new Error("Web Share API not supported");
-      }
-
       let shareData: ShareData = {
         title: blog.title,
         text: shareText,
         url: window.location.href,
       };
 
-      // Only attempt image share if we have an image URL
       if (blog.imageURL) {
         try {
-          // Fetch the image
           const response = await fetch(blog.imageURL);
-          if (!response.ok) throw new Error("Failed to fetch image");
-          
-          const blob = await response.blob();
-          const file = new File([blob], 'blog-image.jpg', { 
-            type: blob.type || 'image/jpeg' 
-          });
-          
-          // Check if files can be shared
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            shareData = {
-              ...shareData,
-              files: [file],
-            };
+          if (response.ok) {
+            const blob = await response.blob();
+            const file = new File([blob], 'blog-image.jpg', { 
+              type: blob.type || 'image/jpeg' 
+            });
+            
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              shareData = {
+                ...shareData,
+                files: [file],
+              };
+            }
           }
-        } catch (imageError) {
-          console.warn('Image sharing failed, continuing with text-only:', imageError);
-          // Continue with text-only share
+        } catch {
+          // Continue without image
         }
       }
 
-      // Attempt to share
       await navigator.share(shareData);
 
-    } catch (error: any) {
-      // Only show fallback for non-abort errors
-      if (error.name !== 'AbortError') {
-        console.warn('Share failed:', error);
-        
-        // Improved fallback: Copy formatted text to clipboard
-        const plainText = stripHtml(blog.content);
-        const excerpt = getExcerpt(plainText, 20);
-        const textToCopy = `${blog.title}\n\n${excerpt}\n\n${window.location.href}`;
-        
+    } catch (error: unknown) {
+      const err = error as Error;
+      if (err.name !== 'AbortError') {
         try {
+          const textToCopy = `${blog.title}\n${window.location.href}`;
           await navigator.clipboard.writeText(textToCopy);
-          alert("Blog content copied to clipboard! You can paste it to share.");
-        } catch (clipboardError) {
-          // Last resort fallback
-          const shareUrl = `${blog.title} - ${window.location.href}`;
-          const textArea = document.createElement('textarea');
-          textArea.value = shareUrl;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand('copy');
-          document.body.removeChild(textArea);
-          alert("Blog link copied to clipboard!");
+          alert("Link copied to clipboard!");
+        } catch {
+          // Ignore clipboard errors
         }
       }
     } finally {
@@ -197,178 +234,284 @@ export default function BlogIdPage() {
     }
   }
 
-  // Alternative approach for platforms that support text but not files properly
-  async function shareWithoutImage(blog: Blog) {
-    const plainText = stripHtml(blog.content);
-    const shareText = createShareText(blog.title, plainText, 60);
-    
+  async function shareTextContent(blog: Blog) {
+    if (!shareSupported) {
+      try {
+        const textToCopy = `${blog.title}\n\n${window.location.href}`;
+        await navigator.clipboard.writeText(textToCopy);
+        alert("Link copied to clipboard!");
+      } catch {
+        alert("Sharing is not supported on this device");
+      }
+      return;
+    }
+
     try {
+      const plainText = stripHtml(blog.content);
+      const shareText = createShareText(blog.title, plainText, 60);
+      
       await navigator.share({
         title: blog.title,
         text: shareText,
         url: window.location.href,
       });
-    } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        const textToCopy = `${blog.title}\n${shareText}\n${window.location.href}`;
-        await navigator.clipboard.writeText(textToCopy);
-        alert("Blog preview copied to clipboard!");
+    } catch (error: unknown) {
+      const err = error as Error;
+      if (err.name !== 'AbortError') {
+        try {
+          const textToCopy = `${blog.title}\n${window.location.href}`;
+          await navigator.clipboard.writeText(textToCopy);
+          alert("Link copied to clipboard!");
+        } catch {
+          // Ignore clipboard errors
+        }
       }
     }
   }
 
-  // Test if sharing works properly on current platform
-  const canShareFiles = !!(blog?.imageURL && 
-    typeof navigator.share === 'function' && 
-    typeof navigator.canShare === 'function' &&
-    navigator.canShare({ files: [new File([], 'test.jpg')] }));
+  const handleSuggestedBlogClick = (blogId: string) => {
+    router.push(`/blog/${blogId}`);
+    scrollToTop();
+  };
 
   if (!blog) {
-    return <p className="text-center mt-20 text-gray-500">Loading blog…</p>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6B4A2E] dark:border-[#D9A441]"></div>
+      </div>
+    );
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gray-50 dark:bg-[#1F1A16] min-h-screen">
-      {/* Top Back */}
-      <button
-        onClick={() => router.push("/blog")}
-        className="mb-8 text-[#6B4A2E] dark:text-[#D9A441] font-semibold hover:underline flex items-center gap-2"
-      >
-        ← Back to Blogs
-      </button>
+    <>
+      <Head>
+        <title>{`${blog.title} | Blog`}</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={blog.title} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={window.location.href} />
+        {blog.imageURL && <meta property="og:image" content={blog.imageURL} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={blog.title} />
+        <meta name="twitter:description" content={metaDescription} />
+        {blog.imageURL && <meta name="twitter:image" content={blog.imageURL} />}
+        <meta name="author" content={blog.author} />
+      </Head>
 
-      <h1 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B] bg-clip-text text-transparent">
-        {blog.title}
-      </h1>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
+        {/* Back Navigation */}
+        <button
+          onClick={() => router.push("/blog")}
+          className="mb-10 text-[#6B4A2E] dark:text-[#D9A441] hover:text-[#B8860B] dark:hover:text-[#FFD700] font-medium flex items-center gap-2 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to all articles
+        </button>
 
-      <p className="text-[#6B4A2E] dark:text-[#D9A441] font-medium mb-8">
-        By {blog.author} • {formatProfessionalDate(blog.createdAt)}
-      </p>
+        {/* Article Header */}
+        <article>
+          <header className="mb-12">
+            <h1 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B] bg-clip-text text-transparent">
 
-      {blog.imageURL && (
-        <div className="relative w-full h-[400px] mb-8">
-          <img
-            src={blog.imageURL}
-            alt={blog.title}
-            className="w-full h-full object-contain rounded-lg bg-gray-100 dark:bg-[#2A231D]"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        </div>
-      )}
+              {blog.title}
+            </h1>
 
-      <div
-        className="prose prose-lg max-w-none dark:prose-invert text-gray-700 dark:text-[#D8C9B4] leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: blog.content }}
-      />
-
-      {/* Share Section with Options */}
-      <div className="mt-12 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={() => shareBlog(blog)}
-            disabled={isSharing}
-            className="flex-1 max-w-md flex items-center justify-center gap-3 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black py-4 rounded-full font-semibold hover:opacity-90 transition disabled:opacity-50"
-          >
-            {isSharing ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Sharing...
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
-                </svg>
-                Share image with link 
-              </>
+            {/* Meta Description */}
+            {metaDescription && (
+              <div className="mb-8">
+                <p className="text-lg text-[#6B4A2E] dark:text-[#D8C9B4] leading-relaxed bg-gradient-to-r from-[#6B4A2E]/10 to-[#D9A441]/10 dark:from-[#6B4A2E]/20 dark:to-[#D9A441]/10 rounded-xl p-6">
+                  {metaDescription}
+                </p>
+              </div>
             )}
-          </button>
+
+            {/* Author & Date */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-t border-b border-[#6B4A2E]/20 dark:border-[#D9A441]/20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] flex items-center justify-center">
+                  <span className="font-medium text-white dark:text-black">
+                    {blog.author.charAt(0)}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-[#6B4A2E] dark:text-[#D9A441]">By {blog.author}</p>
+                  <p className="text-sm text-[#6B4A2E]/70 dark:text-[#D9A441]/70">
+                    {formatProfessionalDate(blog.createdAt)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Featured Image - Only shows when imageURL exists */}
+          {blog.imageURL && (
+            <div className="mb-10 rounded-2xl overflow-hidden">
+              <img
+                src={blog.imageURL}
+                alt={blog.title}
+                className="w-full h-auto max-h-[500px] object-cover"
+                loading="eager"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+
+          {/* Article Content with Enhanced Readability */}
+          <div className="prose prose-lg max-w-none dark:prose-invert">
+            <div className="space-y-8">
+              {contentParagraphs.map((paragraph, index) => {
+                const isLastTwo = index >= contentParagraphs.length - 2;
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`
+                      leading-relaxed text-[#6B4A2E] dark:text-[#D8C9B4]
+                      ${isLastTwo ? 'bg-gradient-to-r from-[#6B4A2E]/5 to-[#D9A441]/5 dark:from-[#6B4A2E]/10 dark:to-[#D9A441]/10 p-6 rounded-xl' : ''}
+                    `}
+                  >
+                    <div 
+                      dangerouslySetInnerHTML={{ __html: paragraph }}
+                      className={isLastTwo ? 'text-lg' : ''}
+                    />
+                    
+                    {isLastTwo && lastTwoParagraphs && (
+                      <div className="mt-4">
+                        <meta name="description" content={lastTwoParagraphs.substring(0, 155) + '...'} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </article>
+
+        {/* Sharing Section */}
+        <div className="mt-16 pt-8 border-t border-[#6B4A2E]/20 dark:border-[#D9A441]/20">
+          <div className="text-center mb-8">
+            <h3 className="text-xl font-semibold text-[#6B4A2E] dark:text-[#D9A441] mb-2">
+              Share this article
+            </h3>
+            <p className="text-[#6B4A2E]/70 dark:text-[#D9A441]/70">
+              Help others discover this story
+            </p>
+          </div>
           
-          {canShareFiles && (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            {/* Share with Image Button */}
             <button
-              onClick={() => shareWithoutImage(blog)}
-              className="flex-1 max-w-md flex items-center justify-center gap-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 py-4 rounded-full font-semibold hover:opacity-90 transition"
+              onClick={() => shareWithImage(blog)}
+              disabled={isSharing}
+              className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black rounded-full font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:opacity-50 w-full sm:w-auto min-w-[240px]"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+              {isSharing ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin"></div>
+                  Sharing...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Share with Image
+                </>
+              )}
+            </button>
+            
+            {/* Share Text Only Button */}
+            <button
+              onClick={() => shareTextContent(blog)}
+              className="group flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-[#1F1A16] text-[#6B4A2E] dark:text-[#D9A441] border-2 border-[#6B4A2E] dark:border-[#D9A441] rounded-full font-medium hover:bg-[#6B4A2E] hover:text-white dark:hover:bg-[#D9A441] dark:hover:text-black transition-all duration-300 w-full sm:w-auto min-w-[240px]"
+            >
+              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
               </svg>
               Share Text Only
             </button>
-          )}
+          </div>
         </div>
-        
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          {canShareFiles 
-            ? "Share includes: Title, description (60 words max), image, and link"
-            : "Share includes: Title, description (60 words max), and link"}
-        </p>
-      </div>
 
-      {/* Suggested Blogs */}
-      {suggestedBlogs.length > 0 && (
-        <section className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800">
-          <h2 className="text-2xl font-bold mb-8 text-[#6B4A2E] dark:text-[#D9A441]">
-            More Stories You Might Like
-          </h2>
+        {/* Suggested Articles */}
+        {suggestedBlogs.length > 0 && (
+          <section className="mt-20">
+            <div className="mb-10">
+              <h2 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B] bg-clip-text text-transparent">
+                Continue Reading
+              </h2>
+              <p className="text-[#6B4A2E]/70 dark:text-[#D9A441]/70">
+                More stories you might enjoy
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {suggestedBlogs.map((b) => (
-              <div
-                key={b.id}
-                onClick={() => router.push(`/blog/${b.id}`)}
-                className="group cursor-pointer bg-white dark:bg-[#2A231D] rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden hover:-translate-y-1"
-              >
-                <div className="relative w-full h-48 bg-gray-100 dark:bg-[#3A332D]">
-                  {b.imageURL ? (
-                    <img
-                      src={b.imageURL}
-                      alt={b.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No Image
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {suggestedBlogs.map((b) => (
+                <article
+                  key={b.id}
+                  onClick={() => handleSuggestedBlogClick(b.id)}
+                  className="group cursor-pointer bg-white dark:bg-[#2A231D] rounded-2xl overflow-hidden border border-[#6B4A2E]/20 dark:border-[#D9A441]/20 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  {/* Image section only shows when imageURL exists */}
+                  {b.imageURL && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={b.imageURL}
+                        alt={b.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
                     </div>
                   )}
-                </div>
-                <div className="p-5">
-                  <h3 className="font-bold text-lg mb-3 group-hover:text-[#6B4A2E] dark:group-hover:text-[#D9A441] transition-colors line-clamp-2">
-                    {b.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
-                    {getExcerpt(stripHtml(b.content), 20)}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
-                    <span>By {b.author}</span>
-                    <span className="group-hover:text-[#6B4A2E] dark:group-hover:text-[#D9A441] transition-colors">
-                      Read →
-                    </span>
+                  
+                  <div className={`p-6 ${!b.imageURL ? 'pt-6' : ''}`}>
+                    <h3 className="font-bold text-lg mb-3 text-[#6B4A2E] dark:text-[#D9A441] group-hover:text-[#B8860B] dark:group-hover:text-[#FFD700] transition-colors line-clamp-2">
+                      {b.title}
+                    </h3>
+                    <p className="text-[#6B4A2E]/70 dark:text-[#D8C9B4]/70 text-sm mb-4 line-clamp-3">
+                      {b.description 
+                        ? getExcerpt(b.description, 20)
+                        : getExcerpt(stripHtml(b.content), 20)}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-[#6B4A2E]/60 dark:text-[#D9A441]/60">
+                        By {b.author}
+                      </span>
+                      <span className="text-sm font-medium text-[#6B4A2E] dark:text-[#D9A441] group-hover:translate-x-1 transition-transform">
+                        Read →
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Leave Hint */}
-      <div className="mt-12 text-center py-8 border-t border-gray-200 dark:border-gray-800">
-        <p className="text-gray-500 dark:text-gray-400 mb-4">
-          You've reached the end of this story. Ready for more inspiration?
-        </p>
-        <button
-          onClick={() => router.push("/blog")}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black rounded-full font-semibold hover:opacity-90 transition"
-        >
-          Explore All Blogs
-        </button>
-      </div>
-    </main>
+        {/* Bottom CTA */}
+        <div className="mt-16 pt-12 border-t border-[#6B4A2E]/20 dark:border-[#D9A441]/20 text-center">
+          <p className="text-[#6B4A2E]/70 dark:text-[#D9A441]/70 mb-6 text-lg">
+            Enjoyed this article? Explore more insights
+          </p>
+          <button
+            onClick={() => router.push("/blog")}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black rounded-full font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            View All Articles
+          </button>
+        </div>
+      </main>
+    </>
   );
 }

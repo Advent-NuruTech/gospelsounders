@@ -132,7 +132,7 @@ export default function PrayerPage() {
                 <div className="space-y-4 text-[#3B2414] dark:text-[#F6F1EA] leading-relaxed">
                   <p>
                     You are welcome to share your burdens, hopes, thanksgivings, and any requests on your heart. 
-                    As Young Evangelists, we stand together in faith—lifting one another before God and trusting 
+                    As Gospel Sounders, we stand together in faith—lifting one another before God and trusting 
                     that He hears every prayer and answers according to His perfect will.
                   </p>
                   <p>

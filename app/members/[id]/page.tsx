@@ -76,44 +76,38 @@ export default function MemberPage() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-12 py-12 bg-gray-50 dark:bg-[#1F1A16]">
-
+      
       {/* Current Member */}
       <div className="max-w-4xl mx-auto mb-20">
-        {/* Image - No cropping */}
-        <div className="w-full mb-6 rounded-2xl overflow-hidden bg-[#F6F1EA] dark:bg-[#2A1A10] shadow-lg">
+        <div className="relative w-full h-64 mb-6 rounded-2xl overflow-hidden bg-[#F6F1EA] dark:bg-[#2A1A10] shadow-lg">
           {member.imageUrl ? (
             <Image
               src={member.imageUrl}
               alt={member.name}
-              width={1600}
-              height={900}
-              className="w-full h-auto object-contain"
+              fill
+              className="object-cover"
             />
           ) : (
-            <div className="w-full h-64 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-500">
+            <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-500">
               No Image
             </div>
           )}
         </div>
 
-        {/* Name */}
         <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B] mb-6">
           {member.name}
         </h1>
 
-        {/* Metadata */}
         <article className="prose dark:prose-invert max-w-none text-[#5A3A23] dark:text-[#D8C9B4]">
           {parse(member.metadata)}
         </article>
       </div>
 
-      {/* Other Members Section */}
+      {/* Other Members */}
       {otherMembers.length > 0 && (
-        <section className="mt-16">
-          {/* Beautiful Section Title */}
-          <h2 className="relative text-2xl md:text-3xl font-extrabold mb-10 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B]">
-            Meet Other Team Members
-            <span className="absolute left-1/2 -bottom-3 w-24 h-1 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] -translate-x-1/2 rounded-full"></span>
+        <section className="mt-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B]">
+            Other Team Members
           </h2>
 
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -121,20 +115,13 @@ export default function MemberPage() {
               <motion.div
                 key={m.id}
                 initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15, duration: 0.6, ease: "easeOut" }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.15, duration: 0.5, ease: "easeOut" }}
                 className="flex flex-col bg-white dark:bg-[#2A221C] rounded-2xl shadow-lg hover:shadow-2xl transition p-5"
               >
-                {/* Image */}
-                <div className="relative w-full h-52 rounded-xl overflow-hidden mb-4">
+                <div className="relative h-44 w-full rounded-xl overflow-hidden mb-4">
                   {m.imageUrl ? (
-                    <Image
-                      src={m.imageUrl}
-                      alt={m.name}
-                      fill
-                      className="object-contain"
-                    />
+                    <Image src={m.imageUrl} alt={m.name} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-sm text-gray-500">
                       No Image
@@ -142,17 +129,14 @@ export default function MemberPage() {
                   )}
                 </div>
 
-                {/* Name */}
-                <h3 className="text-lg font-bold text-gray-900 dark:text-[#F6F1EA] mb-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-[#F6F1EA] mb-1">
                   {m.name}
                 </h3>
 
-                {/* Short description */}
                 <p className="text-sm text-gray-700 dark:text-[#D8C9B4] mb-4 line-clamp-3">
                   {getPreview(m.metadata)}
                 </p>
 
-                {/* CTA */}
                 <Link
                   href={`/members/${m.id}`}
                   className="mt-auto inline-block w-full text-center bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black py-2 px-4 rounded-full font-semibold hover:opacity-90 transition"
@@ -164,7 +148,6 @@ export default function MemberPage() {
           </div>
         </section>
       )}
-
     </main>
   );
 }

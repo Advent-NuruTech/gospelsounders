@@ -81,7 +81,7 @@ export default function HomePage() {
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-[#2A221C] transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <SectionTitle
-            title="Ministry Blog & Updates"
+            title="Ministry Blogs & Updates"
             subtitle="Inspired articles, announcements, and spiritual reflections"
           />
 
