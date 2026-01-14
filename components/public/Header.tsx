@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   FaUsers,
   FaBars,
@@ -12,41 +12,41 @@ import {
   FaWater,
   FaPrayingHands,
   FaDonate,
+  FaChevronDown,
 } from "react-icons/fa";
 import Sidebar from "./SideBar";
-
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
-  const [isClient, setIsClient] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
-  const router = useRouter();
   const pathname = usePathname();
+  const aboutRef = useRef<HTMLDivElement>(null);
 
-  // Handle navigation: show loading bar
   const handleNavigation = () => setLoading(true);
-
-  // Stop loading after route changes
   useEffect(() => setLoading(false), [pathname]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (aboutRef.current && !aboutRef.current.contains(e.target as Node)) {
+        setAboutOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const isActive = (href: string) => pathname === href;
 
   const publicNavItems = [
     { href: "/", label: "Home", icon: FaHome },
     { href: "/sabbath-school", label: "Sabbath School", icon: FaUsers },
- { href: "/library", label: "Library", icon: FaBookOpen},
-
-    { href: "/about", label: "About Us", icon: FaUsers },
+    { href: "/library", label: "Library", icon: FaBookOpen },
     { href: "/blog", label: "Blog", icon: FaWater },
-    
     { href: "#", label: "Donate", icon: FaDonate },
-        { href: "/prayer", label: "Prayer Request", icon: FaPrayingHands }
+    { href: "/prayer", label: "Prayer Request", icon: FaPrayingHands },
   ];
 
   return (
@@ -55,34 +55,60 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20 lg:h-24">
             
-            {/* Logo + Text */}
-            <Link
-              href="/"
-              className="flex items-center gap-3 flex-shrink-0"
-              onClick={handleNavigation}
-            >
-              <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
-                <Image
-                  src="/images/logo.jpg"
-                  alt="Logo"
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                />
+            {/* Logo */}
+            <Link href="/" onClick={handleNavigation} className="flex items-center gap-3">
+              <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                <Image src="/images/logo.jpg" alt="Logo" fill className="object-cover" />
               </div>
-
-              {/* Title always aligned horizontally with logo */}
-              <div className="flex flex-col justify-center">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#F6E3C4] dark:text-[#3B2414] leading-tight">
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#F6E3C4] dark:text-[#3B2414]">
                   Gospel Sounders
                 </h1>
-                <p className="text-xs sm:text-sm md:text-base text-[#D8C9B4] dark:text-[#6B4A2E] -mt-1">
+                <p className="text-xs sm:text-sm text-[#D8C9B4] dark:text-[#6B4A2E] -mt-1">
                   Publications & Missions
                 </p>
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Nav */}
             <div className="hidden lg:flex items-center gap-2">
+
+              {/* About Us Dropdown */}
+              <div ref={aboutRef} className="relative">
+                <button
+                  onClick={() => setAboutOpen(!aboutOpen)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm ${
+                    pathname.startsWith("/about") || pathname.startsWith("/members")
+                      ? "bg-[#D8C9B4] text-[#3B2414] dark:bg-[#6B4A2E] dark:text-[#F6F1EA]"
+                      : "text-[#F6E3C4] hover:bg-[#D8C9B4] hover:text-[#3B2414] dark:text-[#3B2414] dark:hover:bg-[#6B4A2E] dark:hover:text-[#F6F1EA]"
+                  }`}
+                >
+                  <FaUsers />
+                  <span>About Us</span>
+                  <FaChevronDown className="text-xs" />
+                </button>
+
+                {aboutOpen && (
+                  <div className="absolute top-full mt-2 min-w-[180px] rounded-lg shadow-lg overflow-hidden bg-[#3B2414] dark:bg-[#F6F1EA] border border-[#6B4A2E] dark:border-[#D8C9B4]">
+                    <Link
+                      href="/about"
+                      onClick={() => setAboutOpen(false)}
+                      className="block px-4 py-2 text-sm text-[#F6E3C4] dark:text-[#3B2414] hover:bg-[#D8C9B4] hover:text-[#3B2414]"
+                    >
+                      About Us
+                    </Link>
+                    <Link
+                      href="/members"
+                      onClick={() => setAboutOpen(false)}
+                      className="block px-4 py-2 text-sm text-[#F6E3C4] dark:text-[#3B2414] hover:bg-[#D8C9B4] hover:text-[#3B2414]"
+                    >
+                      Our Team
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Other Nav Items */}
               {publicNavItems.map((item) => (
                 <Link
                   key={item.href}
@@ -94,17 +120,17 @@ export default function Navbar() {
                       : "text-[#F6E3C4] hover:bg-[#D8C9B4] hover:text-[#3B2414] dark:text-[#3B2414] dark:hover:bg-[#6B4A2E] dark:hover:text-[#F6F1EA]"
                   }`}
                 >
-                  <item.icon className="text-base" />
+                  <item.icon />
                   <span>{item.label}</span>
                 </Link>
               ))}
             </div>
-   {/* Mobile Hamburger Button */}
-            <div className="lg:hidden flex items-center ml-auto">
+
+            {/* Mobile Button */}
+            <div className="lg:hidden">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-lg bg-[#D8C9B4] dark:bg-[#6B4A2E] hover:bg-[#F6E3C4] dark:hover:bg-[#3B2414] transition-colors duration-200"
-                aria-label="Open menu"
+                className="p-2 rounded-lg bg-[#D8C9B4] dark:bg-[#6B4A2E]"
               >
                 <FaBars className="text-xl text-[#3B2414] dark:text-[#F6E3C4]" />
               </button>
@@ -112,36 +138,22 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Loading Bar */}
         {loading && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#F6E3C4] via-[#D8C9B4] to-[#F6E3C4] animate-pulse">
-            <div className="h-full w-full bg-gradient-to-r from-transparent via-white to-transparent animate-shimmer"></div>
-          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#F6E3C4] via-[#D8C9B4] to-[#F6E3C4] animate-pulse" />
         )}
       </nav>
 
-      {/* Sidebar */}
       {sidebarOpen && (
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
-          publicNavItems={publicNavItems}
+          publicNavItems={[
+            { href: "/about", label: "About Us", icon: FaUsers },
+            { href: "/members", label: "Our Team", icon: FaUsers },
+            ...publicNavItems,
+          ]}
         />
       )}
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        .animate-shimmer {
-          animation: shimmer 1.5s infinite;
-        }
-      `}</style>
     </>
   );
 }

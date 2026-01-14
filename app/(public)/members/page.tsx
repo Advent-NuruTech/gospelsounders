@@ -14,9 +14,11 @@ interface Member {
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMembers = async () => {
+      setIsLoading(true);
       try {
         const membersRef = collection(db, "members");
         const q = query(membersRef, orderBy("createdAt", "asc"));
@@ -30,6 +32,8 @@ export default function MembersPage() {
         setMembers(data);
       } catch (err) {
         console.error("Error fetching members:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -38,20 +42,34 @@ export default function MembersPage() {
 
   return (
     <main className="container mx-auto px-4 py-12">
-      <h2 className="text-2xl font-bold text-[#3B2414] dark:text-[#F6F1EA] mb-6">
-        Registered Members
-      </h2>
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-[#3B2414] dark:text-[#F6F1EA] mb-4">
+          Meet Our Team
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-300">
+          Dedicated to Gospel Work
+        </p>
+      </div>
 
-      {members.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B2414] dark:border-[#F6F1EA]"></div>
+        </div>
+      ) : members.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {members.map((member) => (
             <MemberCard key={member.id} member={member} />
           ))}
         </div>
       ) : (
-        <p className="text-gray-600 dark:text-gray-300 text-center py-20">
-          No members registered yet.
-        </p>
+        <div className="text-center py-20">
+          <p className="text-gray-600 dark:text-gray-300 text-lg mb-4">
+            No members registered yet.
+          </p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Check back soon to meet our team!
+          </p>
+        </div>
       )}
     </main>
   );
