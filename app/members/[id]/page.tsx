@@ -14,6 +14,7 @@ interface Member {
   name: string;
   imageUrl: string;
   metadata: string;
+  description?: string;
 }
 
 interface Blog {
@@ -31,22 +32,16 @@ function stripHtml(html: string) {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function getExcerpt(text: string, words = 24) {
+  const wordsArray = text.split(" ");
+  if (wordsArray.length <= words) return text;
+  return wordsArray.slice(0, words).join(" ") + "…";
+}
+
 function getPreview(html: string, words = 18) {
   const clean = stripHtml(html);
   const parts = clean.split(" ");
   return parts.length > words ? parts.slice(0, words).join(" ") + "…" : clean;
-}
-
-function extractLastTwoParagraphs(content: string): string {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = content;
-  const paragraphs = Array.from(tempDiv.querySelectorAll('p')).map(p => p.textContent?.trim() || '');
-  
-  // Get last two paragraphs that have content
-  const nonEmptyParagraphs = paragraphs.filter(p => p.length > 0);
-  const lastTwo = nonEmptyParagraphs.slice(-2);
-  
-  return lastTwo.join(' ');
 }
 
 function formatProfessionalDate(date: Blog["createdAt"]) {
@@ -75,6 +70,32 @@ function formatProfessionalDate(date: Blog["createdAt"]) {
   })} ${day}${suffix}, ${d.getFullYear()}`;
 }
 
+// Helper to check if author name matches member name (case-insensitive, partial match)
+function authorMatchesMember(authorName: string, memberName: string): boolean {
+  // Clean and normalize both names
+  const cleanAuthor = authorName.trim().toLowerCase();
+  const cleanMember = memberName.trim().toLowerCase();
+  
+  // Check for exact match
+  if (cleanAuthor === cleanMember) return true;
+  
+  // Check if member name contains author name or vice versa
+  if (cleanAuthor.includes(cleanMember) || cleanMember.includes(cleanAuthor)) return true;
+  
+  // Split into parts and check for any part matches
+  const authorParts = cleanAuthor.split(/\s+/);
+  const memberParts = cleanMember.split(/\s+/);
+  
+  // Check if any author part matches any member part
+  for (const authorPart of authorParts) {
+    for (const memberPart of memberParts) {
+      if (authorPart === memberPart) return true;
+    }
+  }
+  
+  return false;
+}
+
 export default function MemberPage() {
   const pathname = usePathname();
   const id = pathname?.split("/").pop();
@@ -84,6 +105,8 @@ export default function MemberPage() {
   const [memberBlogs, setMemberBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingBlogs, setLoadingBlogs] = useState(true);
+  const [metadataParagraphs, setMetadataParagraphs] = useState<string[]>([]);
+  const [lastTwoParagraphs, setLastTwoParagraphs] = useState<string>("");
 
   useEffect(() => {
     if (!id) return;
@@ -94,37 +117,88 @@ export default function MemberPage() {
       
       try {
         // Fetch current member
-        const snap = await getDoc(doc(db, "members", id));
-        if (snap.exists()) {
-          const memberData = { id: snap.id, ...(snap.data() as Member) };
+        const memberSnap = await getDoc(doc(db, "members", id));
+        if (memberSnap.exists()) {
+          const memberData = { id: memberSnap.id, ...(memberSnap.data() as Member) };
           setMember(memberData);
           
-          // Fetch blogs by this member
-          const blogsQuery = query(
-            collection(db, "blog"),
-            orderBy("createdAt", "desc"),
-            limit(6)
-          );
-          const blogsSnap = await getDocs(blogsQuery);
+          // Process metadata for better paragraph display
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = memberData.metadata;
+          const paragraphs = Array.from(tempDiv.querySelectorAll('p')).map(p => p.innerHTML);
+          setMetadataParagraphs(paragraphs);
+          
+          // Extract last two paragraphs
+          if (paragraphs.length >= 2) {
+            const lastTwo = paragraphs.slice(-2);
+            const lastTwoText = lastTwo.map(p => stripHtml(p)).join(' ');
+            setLastTwoParagraphs(lastTwoText);
+          }
+          
+          // Fetch ALL blogs from both collections to ensure we find all matches
+          const blogsPromises = [
+            // Try "blogs" collection (plural - from Add Blog page)
+            getDocs(query(collection(db, "blogs"), orderBy("createdAt", "desc"), limit(50))),
+            // Try "blog" collection (singular - from original blog page)
+            getDocs(query(collection(db, "blog"), orderBy("createdAt", "desc"), limit(50)))
+          ];
+          
+          const [blogsSnapPlural, blogsSnapSingular] = await Promise.all(blogsPromises);
           
           const blogs: Blog[] = [];
-          blogsSnap.forEach((docSnap) => {
+          
+          // Process blogs from "blogs" collection
+          blogsSnapPlural.forEach((docSnap) => {
             const data = docSnap.data();
-            // Check if author matches member name
-            if (data.author === memberData.name) {
+            // Check if ANY part of member name appears in author field
+            if (data.authorName && authorMatchesMember(data.authorName, memberData.name)) {
+              blogs.push({
+                id: docSnap.id,
+                title: data.title,
+                content: data.content,
+                imageURL: data.imageUrl, // Note: field name difference
+                author: data.authorName, // Using authorName field
+                createdAt: data.createdAt ?? null,
+                description: data.shortDescription || "",
+              });
+            }
+          });
+          
+          // Process blogs from "blog" collection
+          blogsSnapSingular.forEach((docSnap) => {
+            const data = docSnap.data();
+            // Check if ANY part of member name appears in author field
+            if (data.author && authorMatchesMember(data.author, memberData.name)) {
               blogs.push({
                 id: docSnap.id,
                 title: data.title,
                 content: data.content,
                 imageURL: data.imageURL,
-                author: data.author ?? "Unknown author",
+                author: data.author,
                 createdAt: data.createdAt ?? null,
                 description: data.description || "",
               });
             }
           });
           
-          setMemberBlogs(blogs);
+          // Remove duplicates by blog title (in case same blog exists in both collections)
+          const uniqueBlogs = blogs.filter((blog, index, self) =>
+            index === self.findIndex(b => b.title === blog.title)
+          );
+          
+          // Sort by date (newest first)
+          uniqueBlogs.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt instanceof Date ? a.createdAt : 
+                          typeof a.createdAt === 'string' ? a.createdAt : 
+                          (a.createdAt as any)?.toDate?.() || new Date()).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt instanceof Date ? b.createdAt : 
+                          typeof b.createdAt === 'string' ? b.createdAt : 
+                          (b.createdAt as any)?.toDate?.() || new Date()).getTime() : 0;
+            return dateB - dateA;
+          });
+          
+          // Limit to 6 most recent
+          setMemberBlogs(uniqueBlogs.slice(0, 6));
         } else {
           setMember(null);
         }
@@ -176,7 +250,7 @@ export default function MemberPage() {
       {/* Back Navigation */}
       <Link 
         href="/members" 
-        className="inline-flex items-center gap-2 text-[#6B4A2E] dark:text-[#D9A441] hover:text-[#B8860B] dark:hover:text-[#FFD700] font-medium mb-8 transition-colors"
+        className="mb-10 text-[#6B4A2E] dark:text-[#D9A441] hover:text-[#B8860B] dark:hover:text-[#FFD700] font-medium flex items-center gap-2 transition-colors"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -188,161 +262,237 @@ export default function MemberPage() {
       <div className="max-w-4xl mx-auto mb-16">
         {/* Member Image - Responsive and not cropped */}
         {member.imageUrl && (
-          <div className="relative w-full h-auto mb-8">
-            <div className="relative w-full aspect-square md:aspect-video rounded-2xl overflow-hidden bg-[#F6F1EA] dark:bg-[#2A1A10] shadow-lg">
+          <div className="mb-10 rounded-2xl overflow-hidden">
+            <div className="relative w-full aspect-square md:aspect-video">
               <Image
                 src={member.imageUrl}
                 alt={member.name}
                 fill
-                className="object-contain p-4"
+                className="object-contain"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
                 priority
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
           </div>
         )}
 
-        <h1 className="text-3xl md:text-4xl font-extrabold mb-6 text-[#6B4A2E] dark:text-[#D9A441]">
+        <h1 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B] bg-clip-text text-transparent">
           {member.name}
         </h1>
 
+        {/* Author Title & Bio */}
+        <div className="mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-t border-b border-[#6B4A2E]/20 dark:border-[#D9A441]/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] flex items-center justify-center">
+                <span className="font-medium text-white dark:text-black">
+                  {member.name.charAt(0)}
+                </span>
+              </div>
+              <div>
+                <p className="font-medium text-[#6B4A2E] dark:text-[#D9A441]">Team Member</p>
+                <p className="text-sm text-[#6B4A2E]/70 dark:text-[#D9A441]/70">
+                  {memberBlogs.length} article{memberBlogs.length !== 1 ? 's' : ''} published
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Member Content with Enhanced Readability */}
-        <article className="prose prose-lg max-w-none dark:prose-invert 
-          prose-headings:text-[#6B4A2E] prose-headings:dark:text-[#D9A441]
-          prose-p:text-[#5A3A23] prose-p:dark:text-[#D8C9B4] prose-p:leading-relaxed prose-p:mb-6
-          prose-a:text-[#B8860B] prose-a:dark:text-[#FFD700] prose-a:no-underline hover:prose-a:underline
-          prose-strong:text-[#5A3A23] prose-strong:dark:text-[#D8C9B4]
-          prose-em:text-[#6B4A2E]/70 prose-em:dark:text-[#D9A441]/70
-          prose-blockquote:text-[#5A3A23] prose-blockquote:dark:text-[#D8C9B4] prose-blockquote:border-l-[#6B4A2E] prose-blockquote:dark:border-l-[#D9A441]
-          prose-ul:text-[#5A3A23] prose-ul:dark:text-[#D8C9B4]
-          prose-ol:text-[#5A3A23] prose-ol:dark:text-[#D8C9B4]
-          prose-li:marker:text-[#6B4A2E] prose-li:dark:marker:text-[#D9A441]">
-          {parse(member.metadata)}
+        <article>
+          <div className="prose prose-lg max-w-none dark:prose-invert">
+            <div className="space-y-8">
+              {metadataParagraphs.map((paragraph, index) => {
+                const isLastTwo = index >= metadataParagraphs.length - 2;
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`
+                      leading-relaxed text-[#6B4A2E] dark:text-[#D8C9B4]
+                      ${isLastTwo ? 'bg-gradient-to-r from-[#6B4A2E]/5 to-[#D9A441]/5 dark:from-[#6B4A2E]/10 dark:to-[#D9A441]/10 p-6 rounded-xl' : ''}
+                    `}
+                  >
+                    <div 
+                      dangerouslySetInnerHTML={{ __html: paragraph }}
+                      className={isLastTwo ? 'text-lg' : ''}
+                    />
+                    
+                    {isLastTwo && lastTwoParagraphs && (
+                      <div className="mt-4">
+                        <meta name="description" content={lastTwoParagraphs.substring(0, 155) + '...'} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </article>
       </div>
 
-      {/* Blogs by this Member */}
-      {memberBlogs.length > 0 && (
-        <section className="max-w-4xl mx-auto mb-16">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <h2 className="text-2xl font-bold text-[#6B4A2E] dark:text-[#D9A441]">
-              Blogs by {member.name}
-            </h2>
-            <span className="text-sm text-[#6B4A2E]/70 dark:text-[#D9A441]/70">
-              {memberBlogs.length} article{memberBlogs.length !== 1 ? 's' : ''}
-            </span>
-          </div>
+      {/* Blogs by this Member - DISPLAYED FIRST */}
+      <div className="max-w-4xl mx-auto">
+        {memberBlogs.length > 0 ? (
+          <section className="mb-16">
+            <div className="mb-10">
+              <h2 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B] bg-clip-text text-transparent">
+                Blogs by {member.name}
+              </h2>
+              <p className="text-[#6B4A2E]/70 dark:text-[#D9A441]/70">
+                Latest articles written by {member.name}
+              </p>
+            </div>
 
-          <div className="grid gap-6">
-            {memberBlogs.map((blog) => {
-              const excerpt = blog.description 
-                ? blog.description.length > 120 
-                  ? blog.description.substring(0, 117) + "..."
-                  : blog.description
-                : getPreview(blog.content, 30);
+            <div className="grid gap-8">
+              {memberBlogs.map((blog) => {
+                const excerpt = blog.description 
+                  ? blog.description.length > 120 
+                    ? blog.description.substring(0, 117) + "..."
+                    : blog.description
+                  : getExcerpt(stripHtml(blog.content), 40);
 
-              return (
-                <Link
-                  key={blog.id}
-                  href={`/blog/${blog.id}`}
-                  onClick={() => handleBlogClick(blog.id)}
-                  className="group block bg-white dark:bg-[#2A221C] rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="p-6">
-                    <div className="flex flex-col lg:flex-row gap-6">
-                      {blog.imageURL && (
-                        <div className="relative w-full lg:w-48 h-48 lg:h-32 rounded-lg overflow-hidden flex-shrink-0">
-                          <Image
-                            src={blog.imageURL}
-                            alt={blog.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            sizes="(max-width: 768px) 100vw, 192px"
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-[#6B4A2E] dark:text-[#D9A441] mb-2 group-hover:text-[#B8860B] dark:group-hover:text-[#FFD700] transition-colors">
-                          {blog.title}
-                        </h3>
-                        
-                        <p className="text-[#5A3A23]/70 dark:text-[#D8C9B4]/70 text-sm mb-3 line-clamp-2">
-                          {excerpt}
-                        </p>
-                        
-                        <div className="flex items-center gap-3 text-xs text-[#6B4A2E]/60 dark:text-[#D9A441]/60">
-                          <span>{formatProfessionalDate(blog.createdAt)}</span>
-                          <span className="group-hover:text-[#6B4A2E] dark:group-hover:text-[#D9A441] transition-colors font-medium">
-                            Read article →
+                return (
+                  <article
+                    key={blog.id}
+                    onClick={() => handleBlogClick(blog.id)}
+                    className="group cursor-pointer bg-white dark:bg-[#2A231D] rounded-2xl overflow-hidden border border-[#6B4A2E]/20 dark:border-[#D9A441]/20 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                  >
+                    {/* Image section only shows when imageURL exists */}
+                    {blog.imageURL && (
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={blog.imageURL}
+                          alt={blog.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                    
+                    <div className={`p-6 ${!blog.imageURL ? 'pt-6' : ''}`}>
+                      <h3 className="font-bold text-lg mb-3 text-[#6B4A2E] dark:text-[#D9A441] group-hover:text-[#B8860B] dark:group-hover:text-[#FFD700] transition-colors line-clamp-2">
+                        {blog.title}
+                      </h3>
+                      <p className="text-[#6B4A2E]/70 dark:text-[#D8C9B4]/70 text-sm mb-4 line-clamp-3">
+                        {excerpt}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-[#6B4A2E]/60 dark:text-[#D9A441]/60">
+                            {formatProfessionalDate(blog.createdAt)}
                           </span>
                         </div>
+                        <span className="text-sm font-medium text-[#6B4A2E] dark:text-[#D9A441] group-hover:translate-x-1 transition-transform">
+                          Read article →
+                        </span>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : !loadingBlogs && (
+          <div className="mb-16 text-center py-12 border-t border-[#6B4A2E]/20 dark:border-[#D9A441]/20">
+            <p className="text-[#6B4A2E]/70 dark:text-[#D9A441]/70 text-lg mb-6">
+              No blog articles published by {member.name} yet.
+            </p>
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black px-6 py-3 rounded-full font-medium hover:opacity-90 transition"
+            >
+              Explore All Blogs
+            </Link>
           </div>
-        </section>
-      )}
+        )}
 
-      {/* Other Members */}
-      {otherMembers.length > 0 && (
-        <section className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8 text-[#6B4A2E] dark:text-[#D9A441]">
-            Meet Other Team Members
-          </h2>
+        {/* Other Members - DISPLAYED AFTER BLOGS */}
+        {otherMembers.length > 0 && (
+          <section className="mt-12 pt-12 border-t border-[#6B4A2E]/20 dark:border-[#D9A441]/20">
+            <div className="mb-10">
+              <h2 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#6B4A2E] via-[#D9A441] to-[#B8860B] bg-clip-text text-transparent">
+                Meet Other Team Members
+              </h2>
+              <p className="text-[#6B4A2E]/70 dark:text-[#D9A441]/70">
+                Discover more talented individuals on our team
+              </p>
+            </div>
 
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherMembers.map((m, index) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.15, duration: 0.5, ease: "easeOut" }}
-                className="flex flex-col bg-white dark:bg-[#2A221C] rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-              >
-                {/* Image section - only shows when imageUrl exists */}
-                {m.imageUrl && (
-                  <div className="relative h-48 w-full">
-                    <Image 
-                      src={m.imageUrl} 
-                      alt={m.name} 
-                      fill 
-                      className="object-contain p-4"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {otherMembers.map((m, index) => (
+                <motion.div
+                  key={m.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.15, duration: 0.5, ease: "easeOut" }}
+                  className="group cursor-pointer bg-white dark:bg-[#2A231D] rounded-2xl overflow-hidden border border-[#6B4A2E]/20 dark:border-[#D9A441]/20 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  {/* Image section - only shows when imageUrl exists */}
+                  {m.imageUrl && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={m.imageUrl}
+                        alt={m.name}
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 p-4"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  <div className={`p-6 ${!m.imageUrl ? 'pt-6' : ''}`}>
+                    <h3 className="font-bold text-lg mb-3 text-[#6B4A2E] dark:text-[#D9A441] group-hover:text-[#B8860B] dark:group-hover:text-[#FFD700] transition-colors line-clamp-2">
+                      {m.name}
+                    </h3>
+                    <p className="text-[#6B4A2E]/70 dark:text-[#D8C9B4]/70 text-sm mb-4 line-clamp-3">
+                      {m.description && m.description.length > 0
+                        ? getExcerpt(m.description, 20)
+                        : getExcerpt(stripHtml(m.metadata), 20)}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-[#6B4A2E]/60 dark:text-[#D9A441]/60">
+                        Team Member
+                      </span>
+                      <Link
+                        href={`/members/${m.id}`}
+                        className="text-sm font-medium text-[#6B4A2E] dark:text-[#D9A441] group-hover:translate-x-1 transition-transform"
+                      >
+                        View Profile →
+                      </Link>
+                    </div>
                   </div>
-                )}
-                
-                <div className="p-5 flex flex-col flex-1">
-                  <h3 className="text-lg font-bold text-[#6B4A2E] dark:text-[#D9A441] mb-2">
-                    {m.name}
-                  </h3>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
 
-                  <p className="text-sm text-[#5A3A23]/70 dark:text-[#D8C9B4]/70 mb-4 line-clamp-3 flex-1">
-                    {getPreview(m.metadata)}
-                  </p>
-
-                  <Link
-                    href={`/members/${m.id}`}
-                    className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black py-2 px-4 rounded-full font-medium hover:opacity-90 transition mt-auto"
-                  >
-                    View Profile
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      )}
-
-    
-     
+      {/* Bottom CTA */}
+      <div className="max-w-4xl mx-auto mt-16 pt-12 border-t border-[#6B4A2E]/20 dark:border-[#D9A441]/20 text-center">
+        <p className="text-[#6B4A2E]/70 dark:text-[#D9A441]/70 mb-6 text-lg">
+          Want to connect with our team?
+        </p>
+        <Link
+          href="/members"
+          className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#6B4A2E] to-[#D9A441] text-white dark:text-black rounded-full font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          View All Team Members
+        </Link>
+      </div>
     </main>
   );
 }
