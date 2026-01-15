@@ -67,6 +67,12 @@ export default function AboutPage() {
     }
   ];
 
+
+
+
+
+
+  
   return (
     <main className="bg-[#F6F1EA] dark:bg-[#2A1A10] min-h-screen">
       {/* Hero Banner */}
@@ -113,6 +119,10 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
+
+
+
+
 
         {/* About Us Section */}
         <div className="bg-gradient-to-r from-[#C9A24D]/10 to-[#C9A24D]/5 dark:from-[#3B2414]/20 dark:to-[#3B2414]/10 rounded-2xl p-6 md:p-10 shadow-sm border border-[#C9A24D]/20 dark:border-[#3B2414]/30">
