@@ -6,6 +6,8 @@ import { db } from "@/lib/firebase";
 import Image from "next/image";
 import parse from "html-react-parser";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -223,9 +225,11 @@ export default function MemberPage() {
     fetchMemberData();
   }, [id]);
 
-  const handleBlogClick = (blogId: string) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const router = useRouter();
+
+const handleBlogClick = (blogId: string) => {
+  router.push(`/blog/${blogId}`);
+};
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen">
@@ -390,9 +394,15 @@ export default function MemberPage() {
                             {formatProfessionalDate(blog.createdAt)}
                           </span>
                         </div>
-                        <span className="text-sm font-medium text-[#6B4A2E] dark:text-[#D9A441] group-hover:translate-x-1 transition-transform">
-                          Read article →
-                        </span>
+                       <span
+  onClick={(e) => {
+    e.stopPropagation(); // Prevent parent article click
+    handleBlogClick(blog.id);
+  }}
+  className="text-sm font-medium text-[#6B4A2E] dark:text-[#D9A441] group-hover:translate-x-1 transition-transform cursor-pointer"
+>
+  Read article →
+</span>
                       </div>
                     </div>
                   </article>
