@@ -327,6 +327,7 @@ export default function BlogIdPage() {
                 </p>
               </div>
             )}
+            
 
             {/* Author & Date */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-t border-b border-[#6B4A2E]/20 dark:border-[#D9A441]/20">

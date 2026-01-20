@@ -24,6 +24,7 @@ import {
   FaCross,
   FaBible,
 } from "react-icons/fa";
+import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 
 export default function Footer() {
@@ -469,29 +470,43 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Footer Bottom */}
-        <div className="pt-8 border-t border-amber-200 dark:border-amber-900/30">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-            <div className="text-center lg:text-left">
-              <p className="text-gray-700 dark:text-gray-300">
-                © {year} Gospel Sounders Publications & Missions. All rights reserved.
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Revealing the Father and the Son.
-              </p>
-            </div>
+     
+<div className="pt-8 border-t border-amber-200 dark:border-amber-900/30">
+  <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+    <div className="text-center lg:text-left">
+      <p className="text-gray-700 dark:text-gray-300">
+        © {year} Gospel Sounders Publications & Missions. All rights reserved.
+      </p>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        Revealing the Father and the Son.
+      </p>
+    </div>
 
-            <div className="flex flex-wrap justify-center gap-4 text-sm">
-              {["Privacy Policy", "Terms of Use", "Cookies"].map((item, i) => (
-                <a
-                  key={i}
-                  href={`/${item.toLowerCase().replace(' ', '-')}`}
-                  className="text-gray-600 dark:text-gray-400 hover:text-[#C9A24D] dark:hover:text-[#D4B875] hover:underline transition-colors px-2"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
+    <div className="flex flex-wrap justify-center gap-4 text-sm">
+      <Link
+        href="/privacy"
+        className="text-gray-600 dark:text-gray-400 hover:text-[#C9A24D] dark:hover:text-[#D4B875] hover:underline transition-colors px-2"
+      >
+        Privacy Policy
+      </Link>
+
+      <Link
+        href="/terms"
+        className="text-gray-600 dark:text-gray-400 hover:text-[#C9A24D] dark:hover:text-[#D4B875] hover:underline transition-colors px-2"
+      >
+        Terms of Use
+      </Link>
+
+      <Link
+        href="/cookies"
+        className="text-gray-600 dark:text-gray-400 hover:text-[#C9A24D] dark:hover:text-[#D4B875] hover:underline transition-colors px-2"
+      >
+        Cookies
+      </Link>
+    </div>
+ 
+
+
 
             {/* Back to Top Button */}
             <button
