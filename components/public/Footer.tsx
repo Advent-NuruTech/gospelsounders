@@ -27,8 +27,39 @@ import {
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 
+function useTyping(text: string, speed = 80, repeatDelay = 2000) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    let characterIndex = 0;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const typeNextCharacter = () => {
+      characterIndex += 1;
+      setDisplayedText(text.slice(0, characterIndex));
+
+      if (characterIndex < text.length) {
+        timeoutId = setTimeout(typeNextCharacter, speed);
+        return;
+      }
+
+      timeoutId = setTimeout(() => {
+        characterIndex = 0;
+        setDisplayedText("");
+        timeoutId = setTimeout(typeNextCharacter, speed);
+      }, repeatDelay);
+    };
+
+    timeoutId = setTimeout(typeNextCharacter, speed);
+    return () => clearTimeout(timeoutId);
+  }, [text, speed, repeatDelay]);
+
+  return displayedText;
+}
+
 export default function Footer() {
   const year = new Date().getFullYear();
+  const typing = useTyping("Powered by Advent NuruTech");
   const [showYoutubeOptions, setShowYoutubeOptions] = useState(false);
   const [hoveredSite, setHoveredSite] = useState<number | null>(null);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -508,14 +539,25 @@ export default function Footer() {
 
 
 
-            {/* Back to Top Button */}
-            <button
-              onClick={scrollToTop}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#C9A24D] to-amber-600 hover:from-amber-600 hover:to-[#C9A24D] text-white font-medium transition-all hover:scale-105 shadow-lg"
-            >
-              <FaChevronUp className="w-4 h-4" />
-              <span>Back to Top</span>
-            </button>
+            <div className="flex flex-col items-center gap-2">
+              {/* Back to Top Button */}
+              <button
+                onClick={scrollToTop}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#C9A24D] to-amber-600 hover:from-amber-600 hover:to-[#C9A24D] text-white font-medium transition-all hover:scale-105 shadow-lg"
+              >
+                <FaChevronUp className="w-4 h-4" />
+                <span>Back to Top</span>
+              </button>
+              <a
+                href="https://wa.me/254142225233?text=Hello%20Advent%20NuruTech%2C%20I%20came%20across%20your%20work%20through%20the%20Gospel%20Sounders%20website.%20I%27m%20interested%20in%20your%20services%20and%20would%20like%20to%20learn%20more%20about%20how%20you%20can%20help%20me.%20Thank%20you"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-400 font-semibold hover:text-blue-500 transition-colors"
+              >
+                {typing}
+                <span className="animate-pulse ml-1">|</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
