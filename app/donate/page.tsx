@@ -18,15 +18,9 @@ export default function DonatePage() {
               studies, publications, and mission work continue with care.
             </p>
             <div className="mt-8 grid gap-4 text-sm text-[#5F4632] sm:grid-cols-3">
-              <div className="border-l-4 border-[#7A4A24] bg-white/70 p-4">
-                Checkout is completed on PayPal&apos;s secure website.
-              </div>
-              <div className="border-l-4 border-[#7A4A24] bg-white/70 p-4">
-                Donations are sent to the ministry PayPal account email.
-              </div>
-              <div className="border-l-4 border-[#7A4A24] bg-white/70 p-4">
-                USD is used because it is supported for PayPal payments.
-              </div>
+              
+              
+             
             </div>
           </div>
 
@@ -84,10 +78,7 @@ export default function DonatePage() {
               Continue to PayPal
             </button>
 
-            <p className="mt-4 text-center text-xs leading-5 text-[#6B4A2E]">
-              This is a personal PayPal account donation, not a tax receipt.
-              PayPal may charge processing or currency conversion fees.
-            </p>
+           
           </form>
         </div>
       </section>
