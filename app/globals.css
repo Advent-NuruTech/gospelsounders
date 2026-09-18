@@ -56,3 +56,17 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@keyframes route-loading-slide {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.route-loading-bar {
+  animation: route-loading-slide 1.2s ease-in-out infinite;
+}

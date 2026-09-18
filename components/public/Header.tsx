@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useRouteLoading } from "@/components/RouteLoadingProvider";
 import {
   FaUsers,
   FaBars,
@@ -18,17 +19,13 @@ import Sidebar from "./SideBar";
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
 
   const pathname = usePathname();
+  const { isRouteLoading, startRouteLoading } = useRouteLoading();
   const aboutRef = useRef<HTMLDivElement>(null);
 
-  const handleNavigation = () => setLoading(true);
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => setLoading(false), 0);
-    return () => window.clearTimeout(timeoutId);
-  }, [pathname]);
+  const handleNavigation = (href: string) => startRouteLoading(href);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -59,7 +56,7 @@ export default function Navbar() {
           <div className="flex justify-between items-center h-20 lg:h-24">
             
             {/* Logo */}
-            <Link href="/" onClick={handleNavigation} className="flex items-center gap-3">
+            <Link href="/" onClick={() => handleNavigation("/")} className="flex items-center gap-3">
               <div className="relative w-16 h-16 rounded-lg overflow-hidden">
                 <Image src="/images/logo.jpg" alt="Logo" fill className="object-cover" />
               </div>
@@ -95,14 +92,20 @@ export default function Navbar() {
                   <div className="absolute top-full mt-2 min-w-[180px] rounded-lg shadow-lg overflow-hidden bg-[#3B2414] dark:bg-[#F6F1EA] border border-[#6B4A2E] dark:border-[#D8C9B4]">
                     <Link
                       href="/about"
-                      onClick={() => setAboutOpen(false)}
+                      onClick={() => {
+                        setAboutOpen(false);
+                        handleNavigation("/about");
+                      }}
                       className="block px-4 py-2 text-sm text-[#F6E3C4] dark:text-[#3B2414] hover:bg-[#D8C9B4] hover:text-[#3B2414]"
                     >
                       About Us
                     </Link>
                     <Link
                       href="/members"
-                      onClick={() => setAboutOpen(false)}
+                      onClick={() => {
+                        setAboutOpen(false);
+                        handleNavigation("/members");
+                      }}
                       className="block px-4 py-2 text-sm text-[#F6E3C4] dark:text-[#3B2414] hover:bg-[#D8C9B4] hover:text-[#3B2414]"
                     >
                       Our Team
@@ -116,7 +119,7 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={handleNavigation}
+                  onClick={() => handleNavigation(item.href)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm whitespace-nowrap ${
                     isActive(item.href)
                       ? "bg-[#D8C9B4] text-[#3B2414] dark:bg-[#6B4A2E] dark:text-[#F6F1EA]"
@@ -141,7 +144,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {loading && (
+        {isRouteLoading && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#F6E3C4] via-[#D8C9B4] to-[#F6E3C4] animate-pulse" />
         )}
       </nav>
