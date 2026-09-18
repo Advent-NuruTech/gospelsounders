@@ -103,8 +103,19 @@ export default function DonatePage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F6F1EA] px-4 text-[#3B2414]">
-      <section className="text-center">
-        <p className="text-lg font-semibold">Donate to</p>
+      <section className="mx-auto max-w-2xl text-center">
+        <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#7A4A24]">
+          Support Gospel Sounders
+        </p>
+        <h1 className="text-3xl font-black leading-tight text-[#2F1A0E] sm:text-5xl">
+          Support Gospel Sounders Publications & Missions
+        </h1>
+        <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#5F4632] sm:text-lg sm:leading-8">
+          Your support helps gospel outreach, media evangelism, Bible studies,
+          publications, and mission work continue with care.
+        </p>
+
+        <p className="mt-8 text-lg font-semibold">Donate to</p>
         <div className="mt-4 flex items-center justify-center gap-3 rounded-lg border border-[#D8C9B4] bg-white px-4 py-3 shadow-sm">
           <span className="break-all text-lg font-bold sm:text-2xl">
             {donationEmail}
