@@ -6,7 +6,8 @@ import AddAdmin from "@/components/admin/AddAdmin";
 import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
+import { ADMIN_ROUTES } from "@/lib/adminRoutes";
 import {
   FiUsers,
   FiFileText,
@@ -101,7 +102,7 @@ export default function AdminDashboard() {
             title="Prayer Requests"
             value={stats.prayerRequests}
             icon={<FaPrayingHands />}
-            onClick={() => router.push("/admin/received-prayer")}
+            onClick={() => router.push(ADMIN_ROUTES.receivedPrayer)}
             color="pink"
           />
 
@@ -181,7 +182,14 @@ export default function AdminDashboard() {
 
 /* ================= COMPONENTS ================= */
 
-const statStyles: any = {
+type StatColor = "blue" | "pink" | "emerald";
+
+interface StatStyle {
+  iconBg: string;
+  iconText: string;
+}
+
+const statStyles: Record<StatColor, StatStyle> = {
   blue: {
     iconBg: "bg-blue-100 dark:bg-blue-900/30",
     iconText: "text-blue-600",
@@ -196,7 +204,15 @@ const statStyles: any = {
   },
 };
 
-function StatCard({ title, value, icon, onClick, color }: any) {
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  onClick: () => void;
+  color: StatColor;
+}
+
+function StatCard({ title, value, icon, onClick, color }: StatCardProps) {
   const s = statStyles[color];
 
   return (
@@ -219,7 +235,17 @@ function StatCard({ title, value, icon, onClick, color }: any) {
   );
 }
 
-const toolStyles: any = {
+type ToolColor = "blue" | "emerald";
+
+interface ToolStyle {
+  bg: string;
+  border: string;
+  title: string;
+  text: string;
+  button: string;
+}
+
+const toolStyles: Record<ToolColor, ToolStyle> = {
   blue: {
     bg: "bg-blue-50 dark:bg-blue-900/20",
     border: "border-blue-200 dark:border-blue-800",
@@ -236,7 +262,14 @@ const toolStyles: any = {
   },
 };
 
-function ToolCard({ title, desc, color, onClick }: any) {
+interface ToolCardProps {
+  title: string;
+  desc: string;
+  color: ToolColor;
+  onClick: () => void;
+}
+
+function ToolCard({ title, desc, color, onClick }: ToolCardProps) {
   const s = toolStyles[color];
 
   return (

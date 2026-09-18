@@ -87,8 +87,8 @@ export default function AdminPage() {
       setFile(null);
       setThumbnail(null);
       fetchLessons();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to save lesson");
     } finally {
       setLoading(false);
     }

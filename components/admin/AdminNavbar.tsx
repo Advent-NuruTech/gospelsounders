@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ADMIN_ROUTES } from "@/lib/adminRoutes";
 import {
   FaTachometerAlt,
   FaUsers,
@@ -14,14 +15,14 @@ import {
 import { useState } from "react";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: FaTachometerAlt },
-  { href: "/members/add-member", label: "Add Member", icon: FaUsers },
-  { href: "/members/edit-member", label: "Edit Members", icon: FaUsers },
-  { href: "/admin/sabbath-school/add-lesson", label: "Add Lesson", icon: FaBookOpen },
-  { href: "/admin/sabbath-school/edit-lesson", label: "Edit Lessons", icon: FaBookOpen },
-  { href: "/dmin/blog/post", label: "Add Blog", icon: FaBookOpen },
-  { href: "/admin/received-prayer", label: "Prayer Requests", icon: FaPrayingHands },
-  { href: "/admin/contributions", label: "Contributions", icon: FaDonate },
+  { href: ADMIN_ROUTES.dashboard, label: "Dashboard", icon: FaTachometerAlt },
+  { href: ADMIN_ROUTES.membersAdd, label: "Add Member", icon: FaUsers },
+  { href: ADMIN_ROUTES.membersEdit, label: "Edit Members", icon: FaUsers },
+  { href: ADMIN_ROUTES.sabbathSchoolAdd, label: "Add Lesson", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.sabbathSchoolEdit, label: "Edit Lessons", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.blogPost, label: "Add Blog", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.receivedPrayer, label: "Prayer Requests", icon: FaPrayingHands },
+  { href: "#", label: "Contributions", icon: FaDonate },
 ];
 
 export default function AdminSidebar() {

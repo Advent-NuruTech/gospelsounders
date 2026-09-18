@@ -6,6 +6,7 @@ import { db, storage } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import RichTextEditor from "@/components/RichTextEditor";
+import { ADMIN_ROUTES } from "@/lib/adminRoutes";
 
 export default function AddBlogPage() {
   const router = useRouter();
@@ -43,9 +44,9 @@ export default function AddBlogPage() {
       });
 
       alert("Blog posted successfully!");
-      router.push("/admin/blog"); // redirect to blog list
-    } catch (err: any) {
-      alert(err.message);
+      router.push(ADMIN_ROUTES.blogDelete);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to post blog");
     } finally {
       setLoading(false);
     }

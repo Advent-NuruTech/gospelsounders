@@ -52,8 +52,8 @@ export default function EditProfile() {
       setMessage("Profile updated successfully!");
       setNewPassword("");
       setCurrentPassword("");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to update profile.");
     }
   };
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
+import { ADMIN_ROUTES } from "@/lib/adminRoutes";
 import {
   FaTachometerAlt,
   FaUsers,
@@ -11,20 +12,20 @@ import {
 } from "react-icons/fa";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: FaTachometerAlt },
-  { href: "/admin/members/add-member", label: "Add Member", icon: FaUsers },
-  { href: "/admin/members/edit-member", label: "Edit Members", icon: FaUsers },
+  { href: ADMIN_ROUTES.dashboard, label: "Dashboard", icon: FaTachometerAlt },
+  { href: ADMIN_ROUTES.membersAdd, label: "Add Member", icon: FaUsers },
+  { href: ADMIN_ROUTES.membersEdit, label: "Edit Members", icon: FaUsers },
 
-  { href: "/admin/sabbath-school/add-lesson", label: "Add Lesson", icon: FaBookOpen },
-  { href: "/admin/sabbath-school/edit-lesson", label: "Edit Lessons", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.sabbathSchoolAdd, label: "Add Lesson", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.sabbathSchoolEdit, label: "Edit Lessons", icon: FaBookOpen },
 
-  { href: "/admin/blog/post", label: "Post Blog", icon: FaBookOpen },
-  { href: "/admin/blog/blog-delete", label: "Edit / Delete Blog", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.blogPost, label: "Post Blog", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.blogDelete, label: "Edit / Delete Blog", icon: FaBookOpen },
 
-  { href: "/admin/bible-studies", label: "Upload Study Notes", icon: FaBookOpen },
-  { href: "/admin/upload-video", label: "Upload Video", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.bibleStudies, label: "Upload Study Notes", icon: FaBookOpen },
+  { href: ADMIN_ROUTES.uploadVideo, label: "Upload Video", icon: FaBookOpen },
 
-  { href: "/admin/received-prayer", label: "Prayer Requests", icon: FaPrayingHands },
+  { href: ADMIN_ROUTES.receivedPrayer, label: "Prayer Requests", icon: FaPrayingHands },
   { href: "#", label: "Contributions", icon: FaDonate },
 ];
 

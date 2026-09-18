@@ -60,8 +60,8 @@ export default function AdminLibraryPage() {
 
       setForm({ title: "", category: "", description: "", file: null });
       setEditingId(null);
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Failed to save document");
     } finally {
       setLoading(false);
     }

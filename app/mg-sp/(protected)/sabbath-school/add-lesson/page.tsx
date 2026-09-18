@@ -6,6 +6,7 @@ import { collection, addDoc } from "firebase/firestore";
 import { uploadToCloudinary } from "@/lib/uploadToCloudinary";
 import RichTextEditor from "@/components/RichTextEditor";
 import { useRouter } from "next/navigation";
+import { ADMIN_ROUTES } from "@/lib/adminRoutes";
 
 export default function AddLessonPage() {
   const router = useRouter();
@@ -39,9 +40,9 @@ export default function AddLessonPage() {
         createdAt: new Date(),
       });
 
-      router.push("/admin/sabbath-school");
-    } catch (e: any) {
-      alert(e.message);
+      router.push(ADMIN_ROUTES.sabbathSchool);
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Failed to save lesson");
     } finally {
       setLoading(false);
     }

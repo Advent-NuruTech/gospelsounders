@@ -130,7 +130,7 @@ export default function HeroBanner() {
                 </Link>
 
                 <Link href="/blog" className="group relative overflow-hidden border-2 border-[#E7D9C4] text-[#E7D9C4] px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold transition-all duration-300 hover:bg-[#E7D9C4] hover:text-[#3B2414] hover:shadow-xl hover:scale-105 active:scale-95 text-base sm:text-lg flex-1 sm:flex-none text-center min-w-[140px]">
-                  <span className="relative z-10">Blog</span>
+                  <span className="relative z-10">Donate</span>
                 </Link>
               </motion.div>
             </motion.div>
