@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import EditProfile from "@/components/admin/EditProfile";
 import AddAdmin from "@/components/admin/AddAdmin";
+import { useRouteLoading } from "@/components/RouteLoadingProvider";
 import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
@@ -14,10 +15,9 @@ import {
   FiLogOut,
   FiSettings,
   FiChevronRight,
+  FiX,
 } from "react-icons/fi";
 import { FaPrayingHands } from "react-icons/fa";
-
-/* ------------------------------------------------------------------ */
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] =
@@ -31,6 +31,7 @@ export default function AdminDashboard() {
 
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { startRouteLoading } = useRouteLoading();
 
   useEffect(() => {
     async function fetchData() {
@@ -55,46 +56,49 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
+  const navigateTo = (href: string) => {
+    startRouteLoading(href);
+    router.push(href);
+  };
+
   const logout = async () => {
     await signOut(auth);
-    router.push("/");
+    navigateTo("/");
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
-
+    <div className="min-h-screen bg-slate-50 transition-colors dark:bg-slate-950">
       {/* HEADER */}
-      <header className="sticky top-0 z-20 border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur border-slate-200 dark:border-slate-800">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">
               Admin Dashboard
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="truncate text-sm text-slate-500 dark:text-slate-400">
               Welcome back, {auth.currentUser?.email?.split("@")[0] || "Admin"}
             </p>
           </div>
 
           <button
             onClick={logout}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white shadow transition"
+            className="flex shrink-0 items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-white shadow transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
           >
-            <FiLogOut />
+            <FiLogOut aria-hidden="true" />
             Logout
           </button>
         </div>
       </header>
 
       {/* MAIN */}
-      <main className="p-6 space-y-6">
-
+      <main className="space-y-5 p-4 sm:p-5 lg:p-6">
         {/* STATS */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             title="Members"
             value={stats.members}
             icon={<FiUsers />}
-            onClick={() => router.push("/members")}
+            onClick={() => navigateTo("/members")}
             color="blue"
           />
 
@@ -102,7 +106,7 @@ export default function AdminDashboard() {
             title="Prayer Requests"
             value={stats.prayerRequests}
             icon={<FaPrayingHands />}
-            onClick={() => router.push(ADMIN_ROUTES.receivedPrayer)}
+            onClick={() => navigateTo(ADMIN_ROUTES.receivedPrayer)}
             color="pink"
           />
 
@@ -110,21 +114,21 @@ export default function AdminDashboard() {
             title="Blog Posts"
             value={stats.blog}
             icon={<FiFileText />}
-            onClick={() => router.push("/blog")}
+            onClick={() => navigateTo("/blog")}
             color="emerald"
           />
         </div>
 
         {/* ADMIN TOOLS */}
-        <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
               Admin Tools
             </h2>
-            <FiSettings className="text-slate-400" />
+            <FiSettings className="shrink-0 text-slate-400" aria-hidden="true" />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <ToolCard
               title="Profile Settings"
               desc="Update email and password"
@@ -143,21 +147,22 @@ export default function AdminDashboard() {
 
       {/* MODAL */}
       {activeTab && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl">
-            <div className="border-b border-slate-200 dark:border-slate-800 p-4 flex justify-between">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-2xl rounded-xl bg-white shadow-xl dark:bg-slate-900">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-4 dark:border-slate-800">
+              <h3 className="min-w-0 break-words font-semibold text-slate-800 dark:text-slate-100">
                 {activeTab === "profile" ? "Edit Profile" : "Add Admin"}
               </h3>
               <button
+                aria-label="Close dialog"
                 onClick={() => setActiveTab(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                className="shrink-0 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-300"
               >
-                ✕
+                <FiX aria-hidden="true" />
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {activeTab === "profile" && <EditProfile />}
               {activeTab === "addAdmin" && <AddAdmin />}
             </div>
@@ -167,10 +172,10 @@ export default function AdminDashboard() {
 
       {/* LOADING */}
       {loading && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-slate-600 dark:text-slate-300 text-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="rounded-lg bg-white p-6 shadow dark:bg-slate-900">
+            <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               Loading dashboard...
             </p>
           </div>
@@ -179,8 +184,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-/* ================= COMPONENTS ================= */
 
 type StatColor = "blue" | "pink" | "emerald";
 
@@ -207,7 +210,7 @@ const statStyles: Record<StatColor, StatStyle> = {
 interface StatCardProps {
   title: string;
   value: number;
-  icon: React.ReactNode;
+  icon: ReactNode;
   onClick: () => void;
   color: StatColor;
 }
@@ -218,19 +221,23 @@ function StatCard({ title, value, icon, onClick, color }: StatCardProps) {
   return (
     <button
       onClick={onClick}
-      className="text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm hover:shadow-md transition focus:outline-none"
+      className="min-w-0 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:border-slate-800 dark:bg-slate-900 sm:p-5"
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className={`p-3 rounded-lg ${s.iconBg} ${s.iconText}`}>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-xl ${s.iconBg} ${s.iconText}`}
+        >
           {icon}
         </div>
-        <FiChevronRight className="text-slate-400" />
+        <FiChevronRight className="shrink-0 text-slate-400" aria-hidden="true" />
       </div>
 
       <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
         {value}
       </h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+      <p className="break-words text-sm text-slate-500 dark:text-slate-400">
+        {title}
+      </p>
     </button>
   );
 }
@@ -273,12 +280,12 @@ function ToolCard({ title, desc, color, onClick }: ToolCardProps) {
   const s = toolStyles[color];
 
   return (
-    <div className={`p-4 rounded-xl border ${s.bg} ${s.border}`}>
-      <h4 className={`font-semibold ${s.title}`}>{title}</h4>
-      <p className={`text-sm mb-3 ${s.text}`}>{desc}</p>
+    <div className={`min-w-0 rounded-lg border p-4 ${s.bg} ${s.border}`}>
+      <h4 className={`break-words font-semibold ${s.title}`}>{title}</h4>
+      <p className={`mb-3 break-words text-sm ${s.text}`}>{desc}</p>
       <button
         onClick={onClick}
-        className={`w-full py-2 rounded-lg text-white font-medium transition ${s.button}`}
+        className={`w-full rounded-md py-2 font-medium text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${s.button}`}
       >
         Open
       </button>

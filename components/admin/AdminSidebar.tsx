@@ -44,7 +44,7 @@ export default function AdminSidebar({
       )}
 
       <aside
-        className={`fixed md:static z-40 top-0 left-0 h-full w-64 bg-gray-900 text-white
+        className={`fixed md:static z-40 top-0 left-0 h-full w-64 shrink-0 bg-gray-900 text-white
         transform transition-transform duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >

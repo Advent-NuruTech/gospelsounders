@@ -11,9 +11,7 @@ export default function AdminRootLayout({ children }: Props) {
   return (
     <AdminAuthGuard>
       <AdminLayout>
-        <div className="min-h-full p-4 md:p-6">
-          {children}
-        </div>
+        <div className="min-h-full">{children}</div>
       </AdminLayout>
     </AdminAuthGuard>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
 import { ADMIN_ROUTES } from "@/lib/adminRoutes";
 import {
+  FaBars,
   FaTachometerAlt,
   FaUsers,
   FaBookOpen,
@@ -46,17 +47,17 @@ export default function AdminLayout({
       />
 
       {/* MAIN AREA */}
-      <div className="flex-1 ml-0 md:ml-64 flex flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* TOP BAR (Mobile only) */}
-        <header className="md:hidden flex items-center justify-between px-4 py-3 
-          bg-white dark:bg-gray-900 
-          border-b border-gray-200 dark:border-gray-800"
+        <header
+          className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900 md:hidden"
         >
           <button
+            aria-label="Open admin navigation"
             onClick={() => setSidebarOpen(true)}
-            className="text-2xl text-gray-700 dark:text-gray-200"
+            className="rounded-md p-2 text-xl text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
           >
-            ☰
+            <FaBars aria-hidden="true" />
           </button>
 
           <h1 className="font-semibold text-gray-800 dark:text-gray-200">
@@ -65,7 +66,7 @@ export default function AdminLayout({
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="flex-1 p-6 text-gray-800 dark:text-gray-200">
+        <main className="flex-1 overflow-x-hidden text-gray-800 dark:text-gray-200">
           {children}
         </main>
       </div>
