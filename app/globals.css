@@ -70,3 +70,114 @@ body {
 .route-loading-bar {
   animation: route-loading-slide 1.2s ease-in-out infinite;
 }
+
+.rich-text-editor {
+  scrollbar-gutter: stable;
+}
+
+.rich-text-editor [role="toolbar"] {
+  scrollbar-width: thin;
+}
+
+@media (max-width: 639px) {
+  .rich-text-editor:focus-within .rich-text-toolbar {
+    position: fixed;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: calc(var(--rte-keyboard-inset, 0px) + max(env(safe-area-inset-bottom), 0.5rem));
+    top: auto;
+    width: auto;
+  }
+}
+
+.rich-text-content .ProseMirror {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.rich-text-content .ProseMirror p {
+  margin: 0 0 0.85rem;
+}
+
+.rich-text-content .ProseMirror h1,
+.rich-text-content .ProseMirror h2,
+.rich-text-content .ProseMirror h3 {
+  margin: 1rem 0 0.6rem;
+  font-weight: 800;
+  line-height: 1.18;
+}
+
+.rich-text-content .ProseMirror h1 {
+  font-size: 2rem;
+}
+
+.rich-text-content .ProseMirror h2 {
+  font-size: 1.55rem;
+}
+
+.rich-text-content .ProseMirror h3 {
+  font-size: 1.25rem;
+}
+
+.rich-text-content .ProseMirror ul,
+.rich-text-content .ProseMirror ol {
+  margin: 0.75rem 0 0.9rem 1.4rem;
+  padding: 0;
+}
+
+.rich-text-content .ProseMirror li {
+  margin: 0.25rem 0;
+  padding-left: 0.15rem;
+}
+
+.rich-text-content .ProseMirror blockquote {
+  margin: 1rem 0;
+  border-left: 4px solid #c9a24d;
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: #475569;
+}
+
+.rich-text-content .ProseMirror code {
+  border-radius: 0.35rem;
+  background: #eef2f7;
+  padding: 0.15rem 0.35rem;
+  color: #1f2937;
+  font-size: 0.9em;
+}
+
+.rich-text-content .ProseMirror a,
+.rich-text-link {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.rich-text-content .ProseMirror img,
+.rich-text-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 0.75rem;
+}
+
+.rich-text-content .ProseMirror .ProseMirror-selectednode {
+  outline: 3px solid rgba(201, 162, 77, 0.5);
+  outline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .rich-text-content .ProseMirror blockquote {
+    color: #cbd5e1;
+  }
+
+  .rich-text-content .ProseMirror code {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+
+  .rich-text-content .ProseMirror a,
+  .rich-text-link {
+    color: #93c5fd;
+  }
+}

@@ -93,7 +93,7 @@ export default function AdminDashboard() {
       {/* MAIN */}
       <main className="space-y-5 p-4 sm:p-5 lg:p-6">
         {/* STATS */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           <StatCard
             title="Members"
             value={stats.members}
@@ -221,18 +221,18 @@ function StatCard({ title, value, icon, onClick, color }: StatCardProps) {
   return (
     <button
       onClick={onClick}
-      className="min-w-0 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:border-slate-800 dark:bg-slate-900 sm:p-5"
+      className="min-w-0 rounded-lg border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:border-slate-800 dark:bg-slate-900 sm:p-5"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-xl ${s.iconBg} ${s.iconText}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg sm:h-11 sm:w-11 sm:text-xl ${s.iconBg} ${s.iconText}`}
         >
           {icon}
         </div>
         <FiChevronRight className="shrink-0 text-slate-400" aria-hidden="true" />
       </div>
 
-      <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+      <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">
         {value}
       </h3>
       <p className="break-words text-sm text-slate-500 dark:text-slate-400">
