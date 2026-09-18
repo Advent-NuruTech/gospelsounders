@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import Image from "next/image";
+import { Check, Copy, Mail } from "lucide-react";
 
 /*
 const paypalEmail = "pondezedd@gmail.com";
@@ -102,34 +103,83 @@ export default function DonatePage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F6F1EA] px-4 text-[#3B2414]">
-      <section className="mx-auto max-w-2xl text-center">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#7A4A24]">
-          Support Gospel Sounders
-        </p>
-        <h1 className="text-3xl font-black leading-tight text-[#2F1A0E] sm:text-5xl">
-          Support Gospel Sounders Publications & Missions
+    <main className="min-h-screen overflow-x-hidden bg-[#F7F2EA] px-5 py-10 text-[#2B170B] sm:px-8">
+      <section className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
+        <Image
+          src="/images/logo.jpg"
+          alt="Gospel Sounders Publications & Missions"
+          width={150}
+          height={150}
+          priority
+          className="h-28 w-28 rounded-full object-cover shadow-[0_8px_28px_rgba(47,26,14,0.18)] sm:h-40 sm:w-40"
+        />
+
+        <div className="mt-10 flex w-full max-w-3xl items-center justify-center gap-4 sm:gap-8">
+          <span className="h-0.5 min-w-0 flex-1 bg-[#D9A72F]" />
+          <p className="bg-gradient-to-b from-[#FFE08B] via-[#D9A72F] to-[#A9730A] bg-clip-text text-5xl font-black uppercase leading-none tracking-normal text-transparent sm:text-7xl">
+            Support
+          </p>
+          <span className="h-0.5 min-w-0 flex-1 bg-[#D9A72F]" />
+        </div>
+
+        <h1 className="mt-8 max-w-4xl break-words text-4xl font-black leading-tight tracking-normal text-[#2B170B] sm:text-6xl lg:text-7xl">
+          Gospel Sounders
+          <span className="block">Publications & Missions</span>
         </h1>
-        <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#5F4632] sm:text-lg sm:leading-8">
+
+        <p className="mt-9 max-w-3xl text-2xl leading-relaxed tracking-normal text-[#625348] sm:text-4xl sm:leading-relaxed">
           Your support helps gospel outreach, media evangelism, Bible studies,
           publications, and mission work continue with care.
         </p>
 
-        <p className="mt-8 text-lg font-semibold">Donate to</p>
-        <div className="mt-4 flex items-center justify-center gap-3 rounded-lg border border-[#D8C9B4] bg-white px-4 py-3 shadow-sm">
-          <span className="break-all text-lg font-bold sm:text-2xl">
+        <div className="mt-14 text-center">
+          <p className="text-3xl font-semibold leading-none text-[#2B170B] sm:text-5xl">
+            Donate with
+          </p>
+          <div className="mt-3 flex items-center justify-center gap-3">
+            <span
+              aria-hidden="true"
+              className="relative inline-block h-14 w-16 sm:h-20 sm:w-24"
+            >
+              <span className="absolute left-0 top-0 text-6xl font-black italic leading-none text-[#003087] sm:text-8xl">
+                P
+              </span>
+              <span className="absolute left-5 top-1 text-6xl font-black italic leading-none text-[#009CDE] sm:left-8 sm:text-8xl">
+                P
+              </span>
+            </span>
+            <span className="text-5xl font-black italic leading-none tracking-normal sm:text-7xl">
+              <span className="text-[#003087]">Pay</span>
+              <span className="text-[#009CDE]">Pal</span>
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={copyEmail}
+          className="mt-10 flex w-full max-w-4xl items-center rounded-2xl border border-[#D6D1C9] bg-white px-4 py-4 text-left shadow-[0_12px_28px_rgba(43,23,11,0.14)] transition hover:border-[#BFA46C] focus:outline-none focus:ring-4 focus:ring-[#D9A72F]/25 sm:rounded-3xl sm:px-8 sm:py-6"
+          aria-label="Copy PayPal email address"
+          title="Copy PayPal email address"
+        >
+          <Mail className="h-8 w-8 shrink-0 text-[#3F454C] sm:h-11 sm:w-11" />
+          <span className="mx-4 min-w-0 flex-1 break-all text-xl font-black leading-snug tracking-normal text-[#2E3136] sm:mx-8 sm:text-4xl">
             {donationEmail}
           </span>
-          <button
-            type="button"
-            onClick={copyEmail}
-            className="shrink-0 rounded-lg bg-[#3B2414] p-3 text-[#F6E3C4] transition hover:bg-[#6B4A2E] focus:outline-none focus:ring-4 focus:ring-[#6B4A2E]/25"
-            aria-label="Copy donation email"
-            title="Copy email"
-          >
-            {copied ? <Check size={20} /> : <Copy size={20} />}
-          </button>
-        </div>
+          <span className="mr-3 hidden h-16 w-px shrink-0 bg-[#E1DDD6] sm:block" />
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EEF0F2] text-[#3F454C] sm:h-16 sm:w-16 sm:rounded-2xl">
+            {copied ? (
+              <Check className="h-7 w-7 sm:h-9 sm:w-9" />
+            ) : (
+              <Copy className="h-7 w-7 sm:h-9 sm:w-9" />
+            )}
+          </span>
+        </button>
+
+        <p className="mt-8 max-w-3xl text-2xl leading-tight tracking-normal text-[#4F5358] sm:text-4xl">
+          Click to copy this PayPal email address
+          <span className="block">and use it to send your donation.</span>
+        </p>
       </section>
     </main>
   );
