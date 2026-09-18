@@ -1,3 +1,9 @@
+"use client";
+
+import { useState } from "react";
+import { Check, Copy } from "lucide-react";
+
+/*
 const paypalEmail = "pondezedd@gmail.com";
 const siteUrl = "https://gspublicationsandmissions.org";
 
@@ -20,9 +26,6 @@ export default function DonatePage() {
               studies, publications, and mission work continue with care.
             </p>
             <div className="mt-8 grid gap-4 text-sm text-[#5F4632] sm:grid-cols-3">
-              
-              
-             
             </div>
           </div>
 
@@ -79,9 +82,42 @@ export default function DonatePage() {
             >
               Continue to PayPal
             </button>
-
-           
           </form>
+        </div>
+      </section>
+    </main>
+  );
+}
+*/
+
+const donationEmail = "pondezedd@gmail.com";
+
+export default function DonatePage() {
+  const [copied, setCopied] = useState(false);
+
+  const copyEmail = async () => {
+    await navigator.clipboard.writeText(donationEmail);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#F6F1EA] px-4 text-[#3B2414]">
+      <section className="text-center">
+        <p className="text-lg font-semibold">Donate to</p>
+        <div className="mt-4 flex items-center justify-center gap-3 rounded-lg border border-[#D8C9B4] bg-white px-4 py-3 shadow-sm">
+          <span className="break-all text-lg font-bold sm:text-2xl">
+            {donationEmail}
+          </span>
+          <button
+            type="button"
+            onClick={copyEmail}
+            className="shrink-0 rounded-lg bg-[#3B2414] p-3 text-[#F6E3C4] transition hover:bg-[#6B4A2E] focus:outline-none focus:ring-4 focus:ring-[#6B4A2E]/25"
+            aria-label="Copy donation email"
+            title="Copy email"
+          >
+            {copied ? <Check size={20} /> : <Copy size={20} />}
+          </button>
         </div>
       </section>
     </main>
