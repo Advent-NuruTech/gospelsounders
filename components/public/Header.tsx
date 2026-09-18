@@ -25,7 +25,10 @@ export default function Navbar() {
   const aboutRef = useRef<HTMLDivElement>(null);
 
   const handleNavigation = () => setLoading(true);
-  useEffect(() => setLoading(false), [pathname]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setLoading(false), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [pathname]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -45,7 +48,7 @@ export default function Navbar() {
     { href: "/sabbath-school", label: "Sabbath School", icon: FaUsers },
     { href: "/library", label: "Library", icon: FaBookOpen },
     { href: "/blog", label: "Blog", icon: FaWater },
-    { href: "#", label: "Donate", icon: FaDonate },
+    { href: "/donate", label: "Donate", icon: FaDonate },
     { href: "/prayer", label: "Prayer Request", icon: FaPrayingHands },
   ];
 
