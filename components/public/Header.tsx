@@ -42,12 +42,13 @@ export default function Navbar() {
 
   const publicNavItems = [
     { href: "/", label: "Home", icon: FaHome },
+    { href: "/prayer", label: "Prayer Request", icon: FaPrayingHands },
+   { href: "/donate", label: "Donate", icon: FaDonate },
+    
     { href: "/sabbath-school", label: "Sabbath School", icon: FaUsers },
     { href: "/library", label: "Library", icon: FaBookOpen },
     { href: "/blog", label: "Blog", icon: FaWater },
-    { href: "/donate", label: "Donate", icon: FaDonate },
-    { href: "/prayer", label: "Prayer Request", icon: FaPrayingHands },
-  ];
+   ];
 
   return (
     <>

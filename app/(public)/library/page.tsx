@@ -64,7 +64,7 @@ export default function LibraryPage() {
             Library
           </h1>
           <p className="text-center max-w-2xl mx-auto text-gray-700 dark:text-[#D8C9B4] mb-8">
-            Explore our categorized study materials. Search, read online, or download.
+            Explore our categorized study materials. Search and read online.
           </p>
 
           {/* Search & Category Filter */}
@@ -132,7 +132,7 @@ export default function LibraryPage() {
                     href={`/library/${doc.id}`}
                     className="inline-block mt-2 text-sm font-semibold bg-gradient-to-r from-yellow-400 to-yellow-600 text-black dark:text-black px-6 py-2 rounded-full hover:opacity-90 transition"
                   >
-                    Study or Download →
+                    Read Online
                   </Link>
                 </li>
               );
@@ -167,7 +167,7 @@ export default function LibraryPage() {
                   href={`/library/${doc.id}`}
                   className="text-sm font-semibold bg-gradient-to-r from-yellow-400 to-yellow-600 text-black dark:text-black px-4 py-2 rounded-full hover:opacity-90 transition mt-4 inline-block"
                 >
-                  view or download the whole document →
+                  Read the whole document
                 </Link>
               </div>
             ))}

@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useParams } from "next/navigation";
+import PdfImageReader from "@/components/PdfImageReader";
 
 interface Lesson {
   id: string;
+  title?: string;
   pdfUrl: string;
 }
 
@@ -27,7 +29,11 @@ export default function LessonPage() {
 
       if (docSnap.exists()) {
         const data = docSnap.data() as Lesson;
-        setLesson({ id: docSnap.id, pdfUrl: data.pdfUrl });
+        setLesson({
+          id: docSnap.id,
+          title: data.title,
+          pdfUrl: data.pdfUrl,
+        });
       }
       setLoading(false);
     }
@@ -50,13 +56,11 @@ export default function LessonPage() {
     );
 
   return (
-    <main className="h-screen w-screen bg-white dark:bg-[#1F1A16]">
-      {/* Fullscreen PDF */}
-      <iframe
-        src={lesson.pdfUrl}
-        className="w-full h-full"
-        title="Sabbath School Lesson"
-      />
-    </main>
+    <PdfImageReader
+      fileUrl={lesson.pdfUrl}
+      title={lesson.title || "Sabbath School Lesson"}
+      backHref="/sabbath-school"
+      backLabel="Lessons"
+    />
   );
 }

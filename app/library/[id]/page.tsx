@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useParams } from "next/navigation";
+import PdfImageReader from "@/components/PdfImageReader";
 
 interface LibraryDoc {
   id: string;
+  title?: string;
   filePath: string;
 }
 
@@ -27,7 +29,11 @@ export default function LibraryDocPage() {
 
       if (docSnap.exists()) {
         const data = docSnap.data() as LibraryDoc;
-        setLibraryDoc({ id: docSnap.id, filePath: data.filePath });
+        setLibraryDoc({
+          id: docSnap.id,
+          title: data.title,
+          filePath: data.filePath,
+        });
       }
       setLoading(false);
     }
@@ -50,13 +56,11 @@ export default function LibraryDocPage() {
     );
 
   return (
-    <main className="h-screen w-screen bg-white dark:bg-[#1F1A16]">
-      {/* Fullscreen PDF/Document */}
-      <iframe
-        src={libraryDoc.filePath}
-        className="w-full h-full"
-        title="Library Document"
-      />
-    </main>
+    <PdfImageReader
+      fileUrl={libraryDoc.filePath}
+      title={libraryDoc.title || "Library Document"}
+      backHref="/library"
+      backLabel="Library"
+    />
   );
 }
